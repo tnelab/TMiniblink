@@ -75,3 +75,6 @@ ModelManifest.xml
   
 #Backup file  
 *.bak
+/src/.vs
+/src/Tnelab.TneForm.Test/LocalStorage
+/src/Tnelab.TneForm.Test/cookies.dat
