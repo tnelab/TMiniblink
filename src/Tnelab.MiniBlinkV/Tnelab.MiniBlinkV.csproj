@@ -2,6 +2,22 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Authors>esrin@qq.com</Authors>
+    <Company>Tnelab</Company>
+    <Description>miniblink的c#封装，miniblink是全球最小的基于chromium的浏览器控件，没有之一。</Description>
+    <Version>1.0.0</Version>
+    <PackageId>Tnelab.MiniBlink</PackageId>
+    <Product>Tnelab.MiniBlink</Product>
+    <Copyright>miniblink版权归其作者所有</Copyright>
+    <PackageLicenseUrl></PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/tnelab/TneApp</PackageProjectUrl>
+    <RepositoryUrl>git@github.com:tnelab/TneApp.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReleaseNotes>miniblink的c#封装，miniblink是全球最小的基于chromium的浏览器控件，没有之一。</PackageReleaseNotes>
+    <PackageTags>miniblink html5 ui webkit chromium tneapp</PackageTags>
+    <AssemblyName>Tnelab.MiniBlink</AssemblyName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -11,11 +27,21 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <PlatformTarget>AnyCPU</PlatformTarget>    
+    <PlatformTarget>x86</PlatformTarget>    
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="license.key" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Tnelab.MiniblinkCore" Version="1.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="WkeApi.cs">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
