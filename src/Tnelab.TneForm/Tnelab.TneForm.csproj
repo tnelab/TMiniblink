@@ -19,22 +19,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="TneForm.d.ts" />
+    <None Remove="TneApp.js" />
     <None Remove="TneForm.ts" />
+    <None Remove="TneMap.ts" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="TneForm.js">
-      <DependentUpon>TneForm.ts</DependentUpon>
+    <EmbeddedResource Include="TneApp.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Include="TneMap.ts">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <Content Include="TneForm.d.ts">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TneForm.js.map">
-      <DependentUpon>TneForm.ts</DependentUpon>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </TypeScriptCompile>
   </ItemGroup>
 
   <ItemGroup>
@@ -50,14 +47,19 @@
   <ItemGroup>
     <ProjectReference Include="..\Tnelab.MiniBlinkV\Tnelab.MiniBlinkV.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="TneApp.d.ts">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <TypeScriptTarget>ES2017</TypeScriptTarget>
+    <TypeScriptTarget>ES2015</TypeScriptTarget>
     <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
-    <TypeScriptModuleKind>None</TypeScriptModuleKind>
+    <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
     <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
     <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
     <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
-    <TypeScriptOutFile />
+    <TypeScriptOutFile>TneApp.js</TypeScriptOutFile>
     <TypeScriptOutDir />
     <TypeScriptGeneratesDeclarations>True</TypeScriptGeneratesDeclarations>
     <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>

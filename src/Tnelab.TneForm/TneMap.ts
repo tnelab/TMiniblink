@@ -1,11 +1,4 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var Tnelab;
-(function (Tnelab) {
+﻿namespace Tnelab {
     /*////////////////////////////////////////////////////////////////////////说明
     基本概念：
     本机对象：指的是c#对象
@@ -16,23 +9,19 @@ var Tnelab;
     ////////////////////////////////////////////////////////////////////////////*/
     /////////////////////////////////////////////////////////////////////////全局
     //js通讯通道分类
-    let TneQueryId;
-    (function (TneQueryId) {
-        TneQueryId[TneQueryId["NativeMap"] = 1] = "NativeMap"; /*本机对象调用映射*/
-        TneQueryId[TneQueryId["RegisterNativeMap"] = 2] = "RegisterNativeMap";
-        TneQueryId[TneQueryId["DeleteNativeObject"] = 3] = "DeleteNativeObject"; /*删除本机对象*/
-        TneQueryId[TneQueryId["GetThisFormHashCode"] = 4] = "GetThisFormHashCode"; /*获取当前窗口ID*/
-    })(TneQueryId || (TneQueryId = {}));
-    ;
-    let GcMap = new Map();
-    function OnSetGC(id, gc) {
+    enum TneQueryId { NativeMap = 1/*本机对象调用映射*/, RegisterNativeMap/*注册类型映射*/ = 2, DeleteNativeObject = 3/*删除本机对象*/, GetThisFormHashCode = 4 /*获取当前窗口ID*/ };
+    //原始js通讯声明
+    declare function mbQuery(msgId: number, request: string, onResponse: (id: number, response: string) => any): void;
+    let GcMap = new Map<number, object>();
+    export function OnSetGC(id: number, gc: object) {
         GcMap.set(id, gc);
     }
-    Tnelab.OnSetGC = OnSetGC;
     //本机调用,用于序列化RunJs的调用结果为JSON
     class OnCallJsInfo {
+        public Status: boolean;
+        public Data: any;
     }
-    function OnCallJs(args) {
+    export function OnCallJs(args: any) {
         let result;
         try {
             let info = new OnCallJsInfo();
@@ -48,14 +37,13 @@ var Tnelab;
         }
         return result;
     }
-    Tnelab.OnCallJs = OnCallJs;
     //js通讯回调
-    function OnResponse(msgId, response) {
+    function OnResponse(msgId: number, response: string) {
         return response;
     }
     //js通道异步封装
-    async function TneQueryAsync(msgId, request) {
-        return new Promise((resolve, reject) => {
+    async function TneQueryAsync(msgId: number, request: string): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
             //调用原始callback的js通讯接口
             mbQuery(msgId, request, (id, response) => {
                 resolve(OnResponse(id, response));
@@ -63,16 +51,16 @@ var Tnelab;
         });
     }
     //本机调用通道
-    async function NativeMapAsync(json) {
+    async function NativeMapAsync(json: string): Promise<any> {
         return await TneQueryAsync(TneQueryId.NativeMap, json);
     }
     //类型映射注册通道
-    async function RegisterNativeMapAsync(nativeTypeName, jsTypeName) {
+    async function RegisterNativeMapAsync(nativeTypeName, jsTypeName): Promise<void> {
         let args = { NativeTypeName: nativeTypeName, JsTypeName: jsTypeName };
         await TneQueryAsync(TneQueryId.RegisterNativeMap, JSON.stringify(args));
     }
     //本机对象释放通道
-    function DeleteNativeObject(id) {
+    function DeleteNativeObject(id: number): void {
         let args = id.toString();
         TneQueryAsync(TneQueryId.DeleteNativeObject, args);
     }
@@ -81,40 +69,44 @@ var Tnelab;
     //装饰器，用于修饰本机映射
     //用法为在属性或者方法上标注：@InvokeInfo("本机方法或属性名称，可为undefined=和方法或属性同名","参数1类型名称","参数2....."....)
     //对于一些通用类型，比如字符串，此声明可以省略，但不能中断参数类型声明
-    function InvokeInfo(nativeName, ...args) {
-        return function (target, propertyKey, descriptor) {
+    export function InvokeInfo(nativeName: string, ...args: string[]) {
+        return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
             if (descriptor.set != undefined) {
                 descriptor.set["NativeName"] = nativeName;
                 descriptor.set["ArgsTypes"] = args;
             }
             if (descriptor.value != undefined) {
                 if (descriptor.value["ArgsTypes"] == undefined) {
-                    descriptor.value["NativeName"] = new Array();
-                    descriptor.value["ArgsTypes"] = new Array();
+                    descriptor.value["NativeName"] = new Array<string>();
+                    descriptor.value["ArgsTypes"] = new Array<string>();
                 }
                 descriptor.value["NativeName"].push(nativeName);
                 descriptor.value["ArgsTypes"].push(args);
             }
-        };
+        }
     }
-    Tnelab.InvokeInfo = InvokeInfo;
     //类型映射JS存根
     class JsMapInfo {
-        constructor() { }
-        static GetMapInfoByNativeTypePath(nativeTypePath) {
+        private static MapDicByNativeTypePath: Map<string, JsMapInfo> = new Map<string, JsMapInfo>();
+        private static MapDicByJsTypePath: Map<string, string> = new Map<string, string>();
+        private constructor() { }
+        public JsType: Function;
+        public JsTypePath: string;
+        public NativeTypePath: string;
+        public static GetMapInfoByNativeTypePath(nativeTypePath: string): JsMapInfo {
             if (JsMapInfo.MapDicByNativeTypePath.has(nativeTypePath)) {
                 return JsMapInfo.MapDicByNativeTypePath.get(nativeTypePath);
             }
             return null;
         }
-        static GetMapInfoByJsTypePath(jsTypePath) {
+        public static GetMapInfoByJsTypePath(jsTypePath: string): JsMapInfo {
             if (JsMapInfo.MapDicByJsTypePath.has(jsTypePath)) {
                 let nativeTypePath = JsMapInfo.MapDicByJsTypePath.get(jsTypePath);
                 return JsMapInfo.GetMapInfoByNativeTypePath(nativeTypePath);
             }
             return null;
         }
-        static GetMapInfoByJsObject(jsObject) {
+        public static GetMapInfoByJsObject(jsObject: object): JsMapInfo {
             //let iterator = JsMapInfo.MapDicByNativeTypePath.values();
             //let r: IteratorResult<JsMapInfo>;
             //while (r = iterator.next(), !r.done) {
@@ -123,12 +115,12 @@ var Tnelab;
             //    }
             //}
             //return null;
-            return JsMapInfo.GetMapInfoByJsTypePath(Reflect.getPrototypeOf(jsObject).constructor.TneMapJsTypePath);
+            return JsMapInfo.GetMapInfoByJsTypePath((Reflect.getPrototypeOf(jsObject).constructor as any).TneMapJsTypePath);
         }
-        static AddMapInfo(jsTypePath, nativeTypePath, jsType) {
+        public static AddMapInfo(jsTypePath: string, nativeTypePath: string, jsType: Function): void {
             jsTypePath = jsTypePath.trim();
             nativeTypePath = nativeTypePath.trim();
-            jsType.TneMapJsTypePath = jsTypePath;
+            (jsType as any).TneMapJsTypePath = jsTypePath;
             let mapInfo = new JsMapInfo();
             mapInfo.JsType = jsType;
             mapInfo.NativeTypePath = nativeTypePath;
@@ -137,91 +129,83 @@ var Tnelab;
             JsMapInfo.MapDicByJsTypePath.set(jsTypePath, nativeTypePath);
         }
     }
-    JsMapInfo.MapDicByNativeTypePath = new Map();
-    JsMapInfo.MapDicByJsTypePath = new Map();
     //装饰器，用于修饰本机映射
     //用法为在类上：@ToMap("JS类型路径"，"本机类型路径")
-    function ToMap(jsTypePath, nativeTypePath) {
-        return function (target) {
-            !target.prototype.TneMap && (target.prototype.TneMap = {});
+    export function ToMap(jsTypePath: string, nativeTypePath: string) {
+        return function (target: Function) {
+            !target.prototype.TneMap && (target.prototype.TneMap = {})
             target.prototype.TneMap.IsBuilded = false;
             target.prototype.TneMap.ConstructorInfos = new Array();
             JsMapInfo.AddMapInfo(jsTypePath, nativeTypePath, target);
         };
     }
-    Tnelab.ToMap = ToMap;
     //装饰器，用于类，标注构造函数签名    
-    function ConstructorInfo(...args) {
-        return function (target) {
+    export function ConstructorInfo(...args: string[]) {
+        return function (target: Function) {
             target.prototype.TneMap.ConstructorInfos.push(args);
         };
     }
-    Tnelab.ConstructorInfo = ConstructorInfo;
     //调用类型
-    let MapAction;
-    (function (MapAction) {
-        MapAction[MapAction["Create"] = 1] = "Create";
-        MapAction[MapAction["SetAccess"] = 2] = "SetAccess";
-        MapAction[MapAction["GetAccess"] = 3] = "GetAccess";
-        MapAction[MapAction["StaticInvoke"] = 4] = "StaticInvoke";
-        MapAction[MapAction["InstanceInvoke"] = 5] = "InstanceInvoke";
-    })(MapAction || (MapAction = {}));
+    enum MapAction { Create = 1, SetAccess = 2, GetAccess = 3, StaticInvoke = 4, InstanceInvoke = 5 }
     //调用传递的参数类型描述，非本机或js类型，表示的是数据的元信息
-    let MapDataType;
-    (function (MapDataType) {
-        MapDataType[MapDataType["NativeObjectId"] = 1] = "NativeObjectId"; /*表示本机对象ID*/
-        MapDataType[MapDataType["Value"] = 2] = "Value"; /*标识一个原生值*/
-        MapDataType[MapDataType["FunctionId"] = 3] = "FunctionId"; /*表示数据为一个js函数*/
-    })(MapDataType || (MapDataType = {}));
-    ;
+    enum MapDataType { NativeObjectId = 1/*表示本机对象ID*/, Value = 2/*标识一个原生值*/, FunctionId = 3 /*表示数据为一个js函数*/ };
     //调用传递的数据描述
     class MapDataInfo {
+        public DataType: MapDataType;//元数据类型描述
+        public Value;//数据值
+        public NativeTypePath: string;//本机类型路径，常为空
     }
     //一个本机对象描述
     class NativeObjectInfo {
+        public Id: number;//本机对象唯一ID
+        public Path: string;//本机类型路径，常为空
+        public GenericInfo: string;//泛型信息
+        public GcInfo: string;
+        public GCObject: object;//垃圾回收对象
     }
     //映射结果描述
     class MapResult {
+        public Status: boolean;//结果状态false为发生异常,data为则为异常信息描述,true表示调用良好,data表述结果描述
+        public Data: MapDataInfo;//结果数据
     }
     //调用构造函数描述
     class MapCreateActionInfo {
-        constructor() {
-            this.Action = MapAction.Create;
-            this.Args = new Array();
-        }
+        public Action: MapAction = MapAction.Create;
+        public Path: string;
+        public Args: Array<MapDataInfo> = new Array<MapDataInfo>();
     }
     //本机实例调用描述
     class MapInstanceInvokeActionInfo {
-        constructor() {
-            this.Action = MapAction.InstanceInvoke;
-            this.Args = new Array();
-        }
+        public Action: MapAction = MapAction.InstanceInvoke;
+        public Id: Number;//本机对象唯一ID
+        public Name: string;
+        public Args: Array<MapDataInfo> = new Array<MapDataInfo>();
     }
     //本机静态调用描述
     class MapStaticInvokeActionInfo {
-        constructor() {
-            this.Action = MapAction.StaticInvoke;
-            this.Args = new Array();
-        }
+        public Action: MapAction = MapAction.StaticInvoke;
+        public Path: string;
+        public Name: string;
+        public Args: Array<MapDataInfo> = new Array<MapDataInfo>();
     }
     //设置属性描述
     class MapSetAccessActionInfo {
-        constructor() {
-            this.Action = MapAction.SetAccess;
-            this.Args = new Array();
-        }
+        public Action: MapAction = MapAction.SetAccess
+        public Id: Number;
+        public Name: string;
+        public Args: Array<MapDataInfo> = new Array<MapDataInfo>();
     }
     //获取属性描述
     class MapGetAccessActionInfo {
-        constructor() {
-            this.Action = MapAction.GetAccess;
-            this.Args = new Array();
-        }
+        public Action: MapAction = MapAction.GetAccess;
+        public Id: Number;
+        public Name: string;
+        public Args: Array<MapDataInfo> = new Array<MapDataInfo>();
     }
     //核心映射器，此类处理所有映射操作js部分
     class NativeMapper {
         //调用本机构造函数
-        static async NativeObjectConstructorAsync(nativeTypePath, argTypes, args) {
+        public static async NativeObjectConstructorAsync(nativeTypePath: string, argTypes: Array<string>, args: Array<any>): Promise<number> {
             let mapInfo = new MapCreateActionInfo();
             mapInfo.Path = nativeTypePath;
             for (let i = 0; i < args.length; i++) {
@@ -248,7 +232,7 @@ var Tnelab;
             return resultValue.Id;
         }
         //动态构造具备本机映射能力的JS类型,构造后该js类型可以和本机类型同步，根据规则动态生成js代码
-        static async BuildNativeType(mapInfo) {
+        public static async BuildNativeType(mapInfo: JsMapInfo): Promise<void> {
             let keys = Reflect.ownKeys(mapInfo.JsType);
             for (let i = 0; i < keys.length; i++) {
                 if (mapInfo.JsType[keys[i].toString()] instanceof Function) {
@@ -264,8 +248,8 @@ var Tnelab;
             }
             await RegisterNativeMapAsync(mapInfo.NativeTypePath, mapInfo.JsTypePath);
         }
-        static GetTypeNames(genericInfo) {
-            let tmps = new Array();
+        public static GetTypeNames(genericInfo: string): Array<string> {
+            let tmps = new Array<string>();
             let gb = 0;
             let lc = 0;
             for (let i = 0; i < genericInfo.length; i++) {
@@ -285,7 +269,7 @@ var Tnelab;
             tmps.push(genericInfo.substr(gb));
             return tmps;
         }
-        static GetRealNativeType(genericInfo, typeInfo) {
+        public static GetRealNativeType(genericInfo: string, typeInfo: string): string {
             typeInfo = typeInfo.trim();
             genericInfo = genericInfo.trim();
             let b = typeInfo.indexOf("<");
@@ -295,7 +279,7 @@ var Tnelab;
                 //if (subTypeInfos.length === 0 && subTypeInfo.length !== 0) {
                 //    subTypeInfos.push(subTypeInfo);
                 //}
-                let realTypeInfos = new Array();
+                let realTypeInfos = new Array<string>();
                 for (let t = 0; t < subTypeInfos.length; t++) {
                     realTypeInfos.push(this.GetRealNativeType(genericInfo, subTypeInfos[t]));
                 }
@@ -312,12 +296,12 @@ var Tnelab;
             return typeInfo;
         }
         //调用本机对象
-        static async MapNativeObjectAsync(mapInfo) {
+        static async MapNativeObjectAsync(mapInfo: any): Promise<any> {
             try {
                 let resultObject = await NativeMapAsync(JSON.stringify(mapInfo));
                 if (resultObject === "OK")
                     return;
-                let result = JSON.parse(resultObject);
+                let result = JSON.parse(resultObject) as MapResult;
                 if (!result.Status)
                     throw result.Data.Value;
                 if (mapInfo.Action != MapAction.Create && result.Data.DataType === MapDataType.NativeObjectId) {
@@ -335,7 +319,7 @@ var Tnelab;
             }
         }
         //动态构造静态调用，根据规则动态生成js代码
-        static BuildNativeStaticInvoke(jsMapInfo, funcName) {
+        static BuildNativeStaticInvoke(jsMapInfo: JsMapInfo, funcName: string): void {
             jsMapInfo.JsType[funcName] = async function () {
                 let mapInfo = new MapStaticInvokeActionInfo();
                 for (let i = 0; i < arguments.length; i++) {
@@ -357,10 +341,10 @@ var Tnelab;
                 mapInfo.Name = funcName;
                 let result = await NativeMapper.MapNativeObjectAsync(mapInfo);
                 return result;
-            };
+            }
         }
         //动态构造实例调用，根据规则动态生成js代码
-        static BuildNativeInvoke(jsMapInfo, protoName) {
+        static BuildNativeInvoke(jsMapInfo: JsMapInfo, protoName: string) {
             let prop = jsMapInfo.JsType.prototype;
             let protoDefine = Reflect.getOwnPropertyDescriptor(prop, protoName);
             let setFlag = protoDefine.set != undefined;
@@ -376,7 +360,7 @@ var Tnelab;
             //    }
             //    ds += "," + p;
             //}            
-            if (setFlag) { //构造设置属性调用函数
+            if (setFlag) {//构造设置属性调用函数
                 let argsTypes = protoDefine.set["ArgsTypes"];
                 protoDefine.set = async function (value) {
                     let mapInfo = new MapSetAccessActionInfo();
@@ -408,21 +392,21 @@ var Tnelab;
                     mapInfo.Id = this.TneMapNativeObjectId;
                     mapInfo.Name = protoName;
                     let result = await NativeMapper.MapNativeObjectAsync(mapInfo);
-                };
+                }
             }
-            if (getFlag) { //构造获取属性调用函数体                
+            if (getFlag) {//构造获取属性调用函数体                
                 protoDefine.get = async function () {
                     let mapInfo = new MapGetAccessActionInfo();
                     mapInfo.Id = this.TneMapNativeObjectId;
                     mapInfo.Name = protoName;
                     let result = await NativeMapper.MapNativeObjectAsync(mapInfo);
                     return result;
-                };
+                }
             }
             if (getFlag || setFlag) {
                 Object.defineProperty(prop, protoName, protoDefine);
             }
-            else { //构造方法调用函数体
+            else {//构造方法调用函数体
                 if (prop[protoName] instanceof Function) {
                     let argsTypes = protoDefine.value["ArgsTypes"];
                     let nativeName = protoDefine.value["NativeName"];
@@ -490,21 +474,24 @@ var Tnelab;
                         mapInfo.Name = name;
                         let result = await NativeMapper.MapNativeObjectAsync(mapInfo);
                         return result;
-                    };
+                    }
                 }
             }
         }
     }
     //所有js本机同步类型的基类
-    class NativeObject {
-        constructor(...arg) {
-            this.TneMapGenericInfo = "";
+    export abstract class NativeObject {
+        public TneMapNativeObjectId: number;
+        private TneMapGcObject_: object;
+        private args_: any;
+        public constructor(...arg: any[]) {
             this.args_ = arguments;
         }
-        async Ready() {
+        public TneMapGenericInfo: string = "";
+        public async Ready() {//请务必使用let t=await new obj().ready()来构造本机类型对象  
             if (this.args_.length == 1 && (this.args_[0] instanceof NativeObjectInfo)) {
-                let noi = this.args_[0];
-                this.TneMapNativeObjectId = noi.Id;
+                let noi = this.args_[0] as NativeObjectInfo;
+                this.TneMapNativeObjectId = noi.Id
                 this.TneMapGenericInfo = noi.GenericInfo;
                 return this;
             }
@@ -514,7 +501,7 @@ var Tnelab;
                 mapInfo.JsType.prototype.TneMap.IsBuilded = true;
             }
             let realArgsIndex = 0;
-            let genericInfo = null;
+            let genericInfo: string = null;
             let isGeneric = mapInfo.JsTypePath.indexOf("<") != -1;
             let constructorInfos = mapInfo.JsType.prototype.TneMap.ConstructorInfos;
             if (constructorInfos.length > 1) {
@@ -568,38 +555,17 @@ var Tnelab;
             GcMap.delete(this.TneMapNativeObjectId);
             return this;
         }
-        FreeTneMapNativeObject() {
+        public FreeTneMapNativeObject(): void {//不在使用本机对象后，请务必调用此方法，销毁本机对象
             DeleteNativeObject(this.TneMapNativeObjectId);
         }
-        static async Build(mapInfo) {
+        static async Build(mapInfo: JsMapInfo) {
             await NativeMapper.BuildNativeType(mapInfo);
         }
+        public static TypeList: Array<string> = new Array<string>();
     }
-    NativeObject.TypeList = new Array();
-    Tnelab.NativeObject = NativeObject;
-    /////////////////////////////////////////////////////////////////////////////////TneForm
-    //本机窗口类，用于控制窗口的姿态
-    let TneForm = class TneForm extends NativeObject {
-        set Width(value) { }
-        get Width() { return undefined; }
-        set Height(value) { }
-        get Height() { return undefined; }
-        Show() { }
-        ShowDialog() { }
-        Close() { }
-        set Url(url) { }
-        get Url() { return undefined; }
-    };
-    __decorate([
-        InvokeInfo("Width", "System.Int32")
-    ], TneForm.prototype, "Width", null);
-    __decorate([
-        InvokeInfo("Height", "System.Int32")
-    ], TneForm.prototype, "Height", null);
-    TneForm = __decorate([
-        ToMap("Tnelab.TneForm", "Tnelab.HtmlView.TneForm")
-    ], TneForm);
-    Tnelab.TneForm = TneForm;
+    /////////////////////////////////////////////////////////////////////////////////ThisForm
+    //自动定义当前窗口的本机id，可以用该ID随时构造出当前窗口本机对象的js同步对象    
+    export var ThisForm: TneForm;
     let dom_ready_ = async function () {
         document.removeEventListener("DOMContentLoaded", dom_ready_, false);
         let hashCode = await TneQueryAsync(TneQueryId.GetThisFormHashCode, "");
@@ -607,9 +573,8 @@ var Tnelab;
         no.Id = hashCode;
         no.GenericInfo = "";
         //ThisFormId = no;
-        Tnelab.ThisForm = await new TneForm(no).Ready();
+        ThisForm = await new TneForm(no).Ready();
     };
     document.addEventListener("DOMContentLoaded", dom_ready_, true);
     /////////////////////////////////////////////////////////////////////////////////JSON
-})(Tnelab || (Tnelab = {}));
-//# sourceMappingURL=TneForm.js.map
+}
