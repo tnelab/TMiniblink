@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+    <Metadata>
+        <Identity Id="Tnelab.TneAppToolkit.2249e26a-12b9-4ec6-8d41-78a4fde43425" Version="1.0" Language="en-US" Publisher="esrin" />
+        <DisplayName>TMiniblink Toolkit</DisplayName>
+        <Description xml:space="preserve">TMiniblink开发工具包</Description>
+        <ReleaseNotes>TMiniblink开发工具包，TMiniblink是基于miniblink vip的封装。</ReleaseNotes>
+        <Tags>html5 netcore ui tneapp miniblink</Tags>
+    </Metadata>
+    <Installation>
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0, 16.0)" />
+    </Installation>
+    <Dependencies>
+        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.6,)" />
+    </Dependencies>
+    <Assets>
+        <Asset Type="Microsoft.VisualStudio.ProjectTemplate" d:Source="Project" d:ProjectName="Tnelab.TneAppExeTemplate" TargetVersion="[15.0,16.0)" d:TargetPath="|Tnelab.TneAppExeTemplate;TemplateProjectOutputGroup|" Path="ProjectTemplates" d:VsixSubPath="ProjectTemplates" />
+        <Asset Type="Microsoft.VisualStudio.ProjectTemplate" d:Source="Project" d:ProjectName="Tnelab.TneAppLibTemplate" TargetVersion="[15.0,16.0)" d:TargetPath="|Tnelab.TneAppLibTemplate;TemplateProjectOutputGroup|" Path="ProjectTemplates" d:VsixSubPath="ProjectTemplates" />
+        <Asset Type="Microsoft.VisualStudio.ProjectTemplate" d:Source="Project" d:ProjectName="Tnelab.TneAppLibForNetStandardTemplate" TargetVersion="[15.0,16.0)" d:TargetPath="|Tnelab.TneAppLibForNetStandardTemplate;TemplateProjectOutputGroup|" Path="ProjectTemplates" d:VsixSubPath="ProjectTemplates" />
+    </Assets>
+    <Prerequisites>
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,16.0)" DisplayName="Visual Studio core editor" />
+    </Prerequisites>
+</PackageManifest>
