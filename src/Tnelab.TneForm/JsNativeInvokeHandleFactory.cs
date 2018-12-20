@@ -6,10 +6,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Scripting;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Tnelab.MiniBlinkV.NativeMethods;
 
 namespace Tnelab.HtmlView

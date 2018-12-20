@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -46,10 +46,20 @@
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>x86</PlatformTarget>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Prefer32Bit>true</Prefer32Bit>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <TypeScriptTarget>ES2017</TypeScriptTarget>
+    <TypeScriptTarget>ES2015</TypeScriptTarget>
+    <TypeScriptExperimentalDecorators>true</TypeScriptExperimentalDecorators>
     <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
-    <TypeScriptModuleKind>None</TypeScriptModuleKind>
+    <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
     <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
     <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
     <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
@@ -60,12 +70,14 @@
     <TypeScriptSourceMap>False</TypeScriptSourceMap>
     <TypeScriptMapRoot />
     <TypeScriptSourceRoot />
-    <TypeScriptExperimentalDecorators>true</TypeScriptExperimentalDecorators>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.0" PrivateAssets="All" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets') AND '$(EnableTypeScriptNuGetTarget)' != 'true'" />
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <PlatformTarget>x86</PlatformTarget>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.DotNetCore.targets" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.DotNetCore.targets') AND '$(EnableTypeScriptNuGetTarget)' != 'true'" />
 
+  <Import Sdk="Microsoft.NET.Sdk.Razor" Project="Sdk.targets" />
 </Project>

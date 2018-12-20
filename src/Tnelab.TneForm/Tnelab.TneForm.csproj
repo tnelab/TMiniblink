@@ -1,58 +1,18 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <TypeScriptToolsVersion>3.1</TypeScriptToolsVersion>
-    <ApplicationIcon />
-    <OutputType>Library</OutputType>
-    <StartupObject />
-    <RootNamespace>Tnelab.HtmlView</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <PlatformTarget>x86</PlatformTarget>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>    
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>x86</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="TneApp.js" />
-    <None Remove="TneForm.ts" />
-    <None Remove="TneMap.ts" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="TneApp.js" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <TypeScriptCompile Include="TneMap.ts">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </TypeScriptCompile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="2.10.0" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <TypeScriptCompile Include="TneForm.ts">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </TypeScriptCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Tnelab.MiniBlinkV\Tnelab.MiniBlinkV.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="TneApp.d.ts">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <TypeScriptTarget>ES2015</TypeScriptTarget>
     <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
     <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
@@ -68,4 +28,50 @@
     <TypeScriptSourceRoot />
     <TypeScriptExperimentalDecorators>true</TypeScriptExperimentalDecorators>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="TneApp.js" />
+    <None Remove="TneForm.ts" />
+    <None Remove="TneMap.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TneApp.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Include="TneMap.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Tnelab.MiniBlinkV\Tnelab.MiniBlinkV.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Include="TneForm.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="TneApp.d.ts">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="TneApp.js.map">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets') AND '$(EnableTypeScriptNuGetTarget)' != 'true'" />
+
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.DotNetCore.targets" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.DotNetCore.targets') AND '$(EnableTypeScriptNuGetTarget)' != 'true'" />
 </Project>

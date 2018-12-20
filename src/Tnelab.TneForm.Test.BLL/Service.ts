@@ -2,7 +2,7 @@
 
 //导入T4工具库
 //此代码由机器自动生成，请不要手动修改
-///<reference path="../Tnelab.TneForm/TneForm.d.ts"/>
+///<reference path="../Tnelab.TneForm/TneApp.d.ts"/>
 namespace BLL{
 	@Tnelab.ConstructorInfo("T","T","T","System.Int32","System.String")
 	@Tnelab.ConstructorInfo()

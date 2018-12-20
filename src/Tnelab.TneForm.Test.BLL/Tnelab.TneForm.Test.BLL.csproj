@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -34,16 +34,27 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="TestService.cs">
+      <Generator></Generator>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Service.tt">
       <LastGenOutput>Service.ts</LastGenOutput>
       <Generator>TextTemplatingFileGenerator</Generator>
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <TypeScriptTarget>ES2015</TypeScriptTarget>
+    <TypeScriptExperimentalDecorators>true</TypeScriptExperimentalDecorators>
     <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
-    <TypeScriptModuleKind>None</TypeScriptModuleKind>
+    <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
     <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
     <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
     <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
@@ -53,8 +64,10 @@
     <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
     <TypeScriptSourceMap>False</TypeScriptSourceMap>
     <TypeScriptMapRoot />
-    <TypeScriptSourceRoot />
-    <TypeScriptExperimentalDecorators>true</TypeScriptExperimentalDecorators>
+    <TypeScriptSourceRoot />    
   </PropertyGroup>
+  
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets') AND '$(EnableTypeScriptNuGetTarget)' != 'true'" />
 
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.DotNetCore.targets" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.DotNetCore.targets') AND '$(EnableTypeScriptNuGetTarget)' != 'true'" />
 </Project>
