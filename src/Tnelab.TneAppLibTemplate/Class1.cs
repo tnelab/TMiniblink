@@ -1,4 +1,4 @@
-﻿//tne://to_typescript
+﻿//tne://to_ts
 using System;
 using System.Collections.Generic;
 $if$ ($targetframeworkversion$ >= 3.5)using System.Linq;
