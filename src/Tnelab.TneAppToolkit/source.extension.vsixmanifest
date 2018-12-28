@@ -17,6 +17,7 @@
         <Asset Type="Microsoft.VisualStudio.ProjectTemplate" d:Source="Project" d:ProjectName="Tnelab.TneAppExeTemplate" TargetVersion="[15.0,16.0)" d:TargetPath="|Tnelab.TneAppExeTemplate;TemplateProjectOutputGroup|" Path="ProjectTemplates" d:VsixSubPath="ProjectTemplates" />
         <Asset Type="Microsoft.VisualStudio.ProjectTemplate" d:Source="Project" d:ProjectName="Tnelab.TneAppLibTemplate" TargetVersion="[15.0,16.0)" d:TargetPath="|Tnelab.TneAppLibTemplate;TemplateProjectOutputGroup|" Path="ProjectTemplates" d:VsixSubPath="ProjectTemplates" />
         <Asset Type="Microsoft.VisualStudio.ProjectTemplate" d:Source="Project" d:ProjectName="Tnelab.TneAppLibForNetStandardTemplate" TargetVersion="[15.0,16.0)" d:TargetPath="|Tnelab.TneAppLibForNetStandardTemplate;TemplateProjectOutputGroup|" Path="ProjectTemplates" d:VsixSubPath="ProjectTemplates" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="Tnelab.TneAppMapTool" Path="|Tnelab.TneAppMapTool;PkgdefProjectOutputGroup|" />
     </Assets>
     <Prerequisites>
         <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,16.0)" DisplayName="Visual Studio core editor" />

@@ -4,67 +4,54 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-//导入T4工具库
-//此代码由机器自动生成，请不要手动修改
+//此代码由机器生成，请不要手动修改
 ///<reference path="../Tnelab.TneForm/TneApp.d.ts"/>
 var BLL;
 (function (BLL) {
-    let TestService = class TestService extends Tnelab.NativeObject {
-        constructor(...arg) { super(...arg); }
-        set ActionProp(value) { }
-        get ActionProp() { return undefined; }
-        CallbackActionTest(action) { }
-        CallbackFuncTest(func) { return undefined; }
-        CallStaticMethod() { }
-        GMethodTest(tneMapGenericTypeInfo, t) { return undefined; }
-        Method1(name, pwd) { return undefined; }
-        Method2(action) { return undefined; }
-        Method3(func) { }
-        Method4(func) { }
-        Method51(tneMapGenericTypeInfo, func, t, t2, t3) { return undefined; }
-        Method5(tneMapId) { }
+    let SimpleTestService = class SimpleTestService extends Tnelab.NativeObject {
+        set Name(value) { }
+        get Name() { return undefined; }
+        set Age(value) { }
+        get Age() { return undefined; }
+        Add(x, y) { return undefined; }
+        GetMessage(msg) { return undefined; }
+        Equals(tneMapId) { }
+        GetHashCode() { return undefined; }
+        GetType() { return undefined; }
+        ReferenceEquals(objA, objB) { return undefined; }
+        ToString() { return undefined; }
     };
     __decorate([
-        Tnelab.InvokeInfo(undefined, "System.Action<System.String>")
-    ], TestService.prototype, "ActionProp", null);
+        Tnelab.InvokeInfo(undefined, "System.String")
+    ], SimpleTestService.prototype, "Name", null);
     __decorate([
-        Tnelab.InvokeInfo("CallbackActionTest", "System.Action<System.String>")
-    ], TestService.prototype, "CallbackActionTest", null);
+        Tnelab.InvokeInfo(undefined, "System.Int32")
+    ], SimpleTestService.prototype, "Age", null);
     __decorate([
-        Tnelab.InvokeInfo("CallbackFuncTest", "System.Func<System.String, System.String>")
-    ], TestService.prototype, "CallbackFuncTest", null);
+        Tnelab.InvokeInfo("Add", "System.Int32", "System.Int32")
+    ], SimpleTestService.prototype, "Add", null);
     __decorate([
-        Tnelab.InvokeInfo("CallStaticMethod")
-    ], TestService.prototype, "CallStaticMethod", null);
+        Tnelab.InvokeInfo("GetMessage", "System.String")
+    ], SimpleTestService.prototype, "GetMessage", null);
     __decorate([
-        Tnelab.InvokeInfo("GMethodTest<T1>", "T")
-    ], TestService.prototype, "GMethodTest", null);
+        Tnelab.InvokeInfo("Equals", "System.Object", "System.Object"),
+        Tnelab.InvokeInfo("Equals", "System.Object")
+    ], SimpleTestService.prototype, "Equals", null);
     __decorate([
-        Tnelab.InvokeInfo("Method1", "System.String", "System.String")
-    ], TestService.prototype, "Method1", null);
+        Tnelab.InvokeInfo("GetHashCode")
+    ], SimpleTestService.prototype, "GetHashCode", null);
     __decorate([
-        Tnelab.InvokeInfo("Method2", "System.Action<System.String, System.Boolean, System.Int32, System.DateTime>")
-    ], TestService.prototype, "Method2", null);
+        Tnelab.InvokeInfo("GetType")
+    ], SimpleTestService.prototype, "GetType", null);
     __decorate([
-        Tnelab.InvokeInfo("Method3", "System.Func<System.String, System.Boolean, System.Int32, System.DateTime>")
-    ], TestService.prototype, "Method3", null);
+        Tnelab.InvokeInfo("ReferenceEquals", "System.Object", "System.Object")
+    ], SimpleTestService.prototype, "ReferenceEquals", null);
     __decorate([
-        Tnelab.InvokeInfo("Method4", "System.Func<System.String, System.Boolean, System.Int32, System.DateTime, System.Int32>")
-    ], TestService.prototype, "Method4", null);
-    __decorate([
-        Tnelab.InvokeInfo("Method51<T1, T2, T3>", "System.Func<T1, System.Boolean>", "T", "T2", "T3")
-    ], TestService.prototype, "Method51", null);
-    __decorate([
-        Tnelab.InvokeInfo("Method5<T1>", "System.Func<T1, System.Boolean>", "T"),
-        Tnelab.InvokeInfo("Method5", "System.Func<T, System.Boolean>", "T"),
-        Tnelab.InvokeInfo("Method5<T1, T2>", "System.Func<T1, System.Boolean>", "T", "T2"),
-        Tnelab.InvokeInfo("Method5<T1, T2, T3>", "System.Func<T1, System.Boolean>", "T", "T2", "T3")
-    ], TestService.prototype, "Method5", null);
-    TestService = __decorate([
-        Tnelab.ConstructorInfo("T", "T", "T", "System.Int32", "System.String"),
-        Tnelab.ConstructorInfo(),
-        Tnelab.ConstructorInfo("System.Action<T, System.Action<T, System.Action<T, System.Action<T>, T>, System.Int32>, T, T>"),
-        Tnelab.ToMap("BLL.TestService<T, T2>", "Tnelab.TneForm.Test.BLL.TestService<T, T2>")
-    ], TestService);
-    BLL.TestService = TestService;
+        Tnelab.InvokeInfo("ToString")
+    ], SimpleTestService.prototype, "ToString", null);
+    SimpleTestService = __decorate([
+        Tnelab.ToMap("BLL.SimpleTestService", "Tnelab.TneForm.Test.BLL.SimpleTestService")
+    ], SimpleTestService);
+    BLL.SimpleTestService = SimpleTestService;
 })(BLL || (BLL = {}));
+//# sourceMappingURL=Service.js.map

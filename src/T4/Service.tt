@@ -1,4 +1,4 @@
-﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+﻿<#@ template debug="true" hostspecific="true" language="C#" #>
 <#@ assembly name="System.Core" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
@@ -6,10 +6,14 @@
 <#@ import namespace="System" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ output extension=".ts" #>
-<#@ include file="JsNativeMapHelper.t4"#>
+<#@ include file="../T4/JsNativeMapHelper.t4"#>//导入T4工具库
 <#
 var builder=new JsNativeMapBuilder();
-builder.SetNamespace("BLL");//设置TS命名空间
-builder.AddCsFile("Tnelab.TneForm.Test/BLL/TestService.cs");//添加需要生成TS映射描述的cs文件
+builder.ProjectName="Tnelab.TneForm.Test.BLL";//cs代码所在项目名称
+builder.Namespace="BLL";//设置TS命名空间
+builder.AddCsFile("/TestService.cs");//添加需要生成TS映射描述的cs文件,已项目为根的绝对路径
 #>
-<#=builder.Build();#>//生成该cs所类型的，TS映射描述
+<#//生成该cs类型的，TS映射描述#>
+//此代码由机器自动生成，请不要手动修改
+///<reference path="../Tnelab.TneForm/TneForm.d.ts"/>
+<#=builder.Build(dte)#>

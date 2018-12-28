@@ -23,7 +23,9 @@
 
   <ItemGroup>
     <EmbeddedResource Include="UI\Script\Default.js" />
-    <EmbeddedResource Include="UI\Default.html" />
+    <EmbeddedResource Include="UI\Default.html">
+      <Generator></Generator>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
@@ -34,7 +36,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Tnelab.TneForm.Test.BLL\Tnelab.TneForm.Test.BLL.csproj" />
     <ProjectReference Include="..\Tnelab.TneForm\Tnelab.TneForm.csproj" />
   </ItemGroup>
 
