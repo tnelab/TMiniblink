@@ -36,6 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Tnelab.TneForm.Test.BLL\Tnelab.TneForm.Test.BLL.csproj" />
     <ProjectReference Include="..\Tnelab.TneForm\Tnelab.TneForm.csproj" />
   </ItemGroup>
 

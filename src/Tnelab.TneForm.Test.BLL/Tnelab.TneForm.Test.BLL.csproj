@@ -43,7 +43,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Service.js" />
     <None Remove="SimpleTestService.cs.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Service.js" />
   </ItemGroup>
 
   <ItemGroup>
