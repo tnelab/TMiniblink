@@ -10,7 +10,6 @@ namespace Tnelab.MiniBlinkV
     using mbJsValue= Int64;
     using mbJsExecState=IntPtr;
     using utf8 =String;
-    using utf8_ = IntPtr;
     using mbWebFrameHandle = IntPtr;
     using mbNetJob = IntPtr;
     using mbWebView = IntPtr;
@@ -21,6 +20,10 @@ namespace Tnelab.MiniBlinkV
     using mbWebUrlResponsePtr=IntPtr;
     using LONG = Int32;
     using HWND = IntPtr;
+    using mbStringPtr = IntPtr;
+    using size_t = IntPtr;
+    using mbMemBufPtr = IntPtr;
+    using ItemPtr = IntPtr;
 
     using jsValue = Int64;
     using jsExecState = IntPtr;
@@ -89,13 +92,16 @@ namespace Tnelab.MiniBlinkV
             MB_PROXY_SOCKS5HOSTNAME
         }
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe struct mbProxy
+        public struct mbProxy
         {
             public mbProxyType type;
-            public fixed char hostname[100];
+            [MarshalAs(UnmanagedType.LPStr, SizeConst = 100)]
+            public string hostname;
             public UInt16 port;
-            public fixed char username[50];
-            public fixed char password[50];
+            [MarshalAs(UnmanagedType.LPStr,SizeConst =50)]
+            public string username;
+            [MarshalAs(UnmanagedType.LPStr, SizeConst = 50)]
+            public string password;
         }
 
         public enum mbSettingMask
@@ -214,10 +220,10 @@ namespace Tnelab.MiniBlinkV
         {
             public int size;
             public IntPtr data;
-            public IntPtr length;
+            public size_t length;
         }
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe struct mbWebDragData
+        public struct mbWebDragData
         {
             [StructLayout(LayoutKind.Sequential)]
             public struct Item {
@@ -237,33 +243,33 @@ namespace Tnelab.MiniBlinkV
                 public mbStorageType storageType;
 
                 // Only valid when storageType == StorageTypeString.
-                public mbMemBuf* stringType;
-                public mbMemBuf* stringData;
+                public mbMemBufPtr stringType;
+                public mbMemBufPtr stringData;
 
                 // Only valid when storageType == StorageTypeFilename.
-                public mbMemBuf* filenameData;
-                public mbMemBuf* displayNameData;
+                public mbMemBufPtr filenameData;
+                public mbMemBufPtr displayNameData;
 
                 // Only valid when storageType == StorageTypeBinaryData.
-                public mbMemBuf* binaryData;
+                public mbMemBufPtr binaryData;
 
                 // Title associated with a link when stringType == "text/uri-list".
                 // Filename when storageType == StorageTypeBinaryData.
-                public mbMemBuf* title;
+                public mbMemBufPtr title;
 
                 // Only valid when storageType == StorageTypeFileSystemFile.
-                public mbMemBuf* fileSystemURL;
+                public mbMemBufPtr fileSystemURL;
                 public Int64 fileSystemFileSize;
 
                 // Only valid when stringType == "text/html".
-                public mbMemBuf* baseURL;
+                public mbMemBufPtr baseURL;
             }
 
-            public IntPtr m_itemList;
+            public ItemPtr m_itemList;
             public int m_itemListLength;
 
             public int m_modifierKeyState; // State of Shift/Ctrl/Alt/Meta keys.
-            public IntPtr m_filesystemId;
+            public mbMemBufPtr m_filesystemId;
         }
 
         public enum mbWebDragOperation
@@ -324,43 +330,30 @@ namespace Tnelab.MiniBlinkV
             //kMbJsTypeArray = 6,
             kMbJsTypeNull = 7,
         }
-        public static string Ptr2Utf8(IntPtr ptr)
-        {
-            List<byte> bytes = new List<byte>();
-            var b = Marshal.ReadByte(ptr);
-            while (b != 0)
-            {
-                bytes.Add(b);
-                ptr += 1;
-                b = Marshal.ReadByte(ptr);                
-            }
-            var result = Encoding.UTF8.GetString(bytes.ToArray());
-            return result;
-        }
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
         public delegate void mbRunJsCallback(mbWebView webView, IntPtr param, mbJsExecState es, mbJsValue v);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-        public delegate void mbJsQueryCallback(mbWebView webView, IntPtr param, mbJsExecState es, int64_t queryId, int customMsg,utf8_ request);
+        public delegate void mbJsQueryCallback(mbWebView webView, IntPtr param, mbJsExecState es, int64_t queryId, int customMsg, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 request);
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void mbTitleChangedCallback(mbWebView webView, IntPtr param,  utf8_ title);
+        public delegate void mbTitleChangedCallback(mbWebView webView, IntPtr param, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 title);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-        public delegate void mbURLChangedCallback(mbWebView webView, IntPtr param, utf8 url, bool canGoBack, bool canGoForward);
+        public delegate void mbURLChangedCallback(mbWebView webView, IntPtr param, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 url, bool canGoBack, bool canGoForward);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-        public delegate void mbURLChangedCallback2(mbWebView webView, IntPtr param, mbWebFrameHandle frameId, utf8 url);
+        public delegate void mbURLChangedCallback2(mbWebView webView, IntPtr param, mbWebFrameHandle frameId, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 url);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
         public delegate void mbPaintUpdatedCallback(mbWebView webView, IntPtr param, HDC hdc, int x, int y, int cx, int cy);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
         public delegate void mbPaintBitUpdatedCallback(mbWebView webView, IntPtr param, IntPtr buffer, ref mbRect r, int width, int height);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-        public delegate void mbAlertBoxCallback(mbWebView webView, IntPtr param, utf8 msg);
+        public delegate void mbAlertBoxCallback(mbWebView webView, IntPtr param, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 msg);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-        public delegate bool mbConfirmBoxCallback(mbWebView webView, IntPtr param, utf8 msg);
+        public delegate bool mbConfirmBoxCallback(mbWebView webView, IntPtr param, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 msg);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-        public delegate bool mbPromptBoxCallback(mbWebView webView, IntPtr param, utf8 msg, utf8 defaultResult, utf8 result);
+        public delegate bool mbPromptBoxCallback(mbWebView webView, IntPtr param, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 msg, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 defaultResult, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 result);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-        public delegate bool mbNavigationCallback(mbWebView webView, IntPtr param, mbNavigationType navigationType, utf8 url);
+        public delegate bool mbNavigationCallback(mbWebView webView, IntPtr param, mbNavigationType navigationType, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 url);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-        public delegate mbWebView mbCreateViewCallback(mbWebView webView, IntPtr param, mbNavigationType navigationType, utf8 url, ref mbWindowFeatures windowFeatures);
+        public delegate mbWebView mbCreateViewCallback(mbWebView webView, IntPtr param, mbNavigationType navigationType, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 url, ref mbWindowFeatures windowFeatures);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
         public delegate void mbDocumentReadyCallback(mbWebView webView, IntPtr param, mbWebFrameHandle frameId);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -373,7 +366,7 @@ namespace Tnelab.MiniBlinkV
             MB_LOADING_CANCELED
         }
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-        public delegate void mbLoadingFinishCallback(mbWebView webView, IntPtr param, mbWebFrameHandle frameId, utf8 url, mbLoadingResult result, utf8 failedReason);
+        public delegate void mbLoadingFinishCallback(mbWebView webView, IntPtr param, mbWebFrameHandle frameId, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 url, mbLoadingResult result, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 failedReason);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
         public delegate bool mbDownloadCallback(mbWebView webView, IntPtr param, mbWebFrameHandle frameId, string url);
 
@@ -388,7 +381,7 @@ namespace Tnelab.MiniBlinkV
             mbLevelLast = mbLevelInfo
         }
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-        public delegate void mbConsoleCallback(mbWebView webView, IntPtr param, mbConsoleLevel level, utf8_ message, utf8_ sourceName, uint sourceLine, utf8_ stackTrace);
+        public delegate void mbConsoleCallback(mbWebView webView, IntPtr param, mbConsoleLevel level, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 message, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 sourceName, uint sourceLine, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 stackTrace);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
         public delegate void mbOnCallUiThread(mbWebView webView, IntPtr paramOnInThread);
@@ -409,8 +402,9 @@ namespace Tnelab.MiniBlinkV
         [return: MarshalAs(UnmanagedType.Bool)]
         public delegate bool mbNetResponseCallback(mbWebView webView, IntPtr param, string url, IntPtr job);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-        public delegate void mbOnNetGetFaviconCallback(mbWebView webView, IntPtr param, utf8 url, ref mbMemBuf buf);
-        
+        public delegate void mbNetGetFaviconCallback(mbWebView webView, IntPtr param, [MarshalAs(UnmanagedType.CustomMarshaler,MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 url, ref mbMemBufPtr buf);
+
+
 
         public enum MbAsynRequestState {
             kMbAsynRequestStateOk = 0,
@@ -419,11 +413,11 @@ namespace Tnelab.MiniBlinkV
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
         public delegate void mbCanGoBackForwardCallback(mbWebView webView, IntPtr param, MbAsynRequestState state, bool b);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-        public delegate void mbGetCookieCallback(mbWebView webView, IntPtr param, MbAsynRequestState state, utf8 cookie);
+        public delegate void mbGetCookieCallback(mbWebView webView, IntPtr param, MbAsynRequestState state, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 cookie);
 
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-        public delegate void mbGetMHTMLCallback(mbWebView webView, IntPtr param, utf8 mhtml);
+        public delegate void mbGetMHTMLCallback(mbWebView webView, IntPtr param, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 mhtml);
 
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
@@ -433,7 +427,7 @@ namespace Tnelab.MiniBlinkV
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
         public delegate void mbOnUrlRequestDidReceiveDataCallback(mbWebView webView, IntPtr param, mbWebUrlRequestPtr request, string data, int dataLength);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
-        public delegate void mbOnUrlRequestDidFailCallback(mbWebView webView, IntPtr param, mbWebUrlRequestPtr request, utf8 error);
+        public delegate void mbOnUrlRequestDidFailCallback(mbWebView webView, IntPtr param, mbWebUrlRequestPtr request, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 error);
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Ansi)]
         public delegate void mbOnUrlRequestDidFinishLoadingCallback(mbWebView webView, IntPtr param, mbWebUrlRequestPtr request, double finishTime);
         [StructLayout(LayoutKind.Sequential)]
@@ -489,10 +483,12 @@ namespace Tnelab.MiniBlinkV
         public extern static void mbNetHookRequest(mbNetJob job);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
         public extern static void mbNetChangeRequestUrl(mbNetJob jobPtr, string url);
+        [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall,CharSet =CharSet.Ansi)]
+        public extern static void mbNetSetMIMEType(mbNetJob jobPtr, string type);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
-        public extern static mbWebUrlRequestPtr mbNetCreateWebUrlRequest(utf8 url, utf8 method, utf8 mime);
+        public extern static mbWebUrlRequestPtr mbNetCreateWebUrlRequest([MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 url, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 method, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 mime);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
-        public extern static void mbNetAddHTTPHeaderFieldToUrlRequest(mbWebUrlRequestPtr request, utf8 name, utf8 value);
+        public extern static void mbNetAddHTTPHeaderFieldToUrlRequest(mbWebUrlRequestPtr request, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))] utf8 name, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 value);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
         public extern static int mbNetStartUrlRequest(mbWebView webView, mbWebUrlRequestPtr request, IntPtr param, ref mbUrlRequestCallbacks callbacks);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
@@ -520,11 +516,13 @@ namespace Tnelab.MiniBlinkV
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
         public extern static void mbSetDragDropEnable(mbWebView webView, bool b);//可关闭拖拽到其他进程
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
-        public extern static void mbSetCookie(mbWebView webView, utf8 url, utf8 cookie);//cookie格式必须是:Set-cookie: PRODUCTINFO=webxpress; domain=.fidelity.com; path=/; secure
+        public extern static void mbSetCookie(mbWebView webView, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 url, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 cookie);//cookie格式必须是:Set-cookie: PRODUCTINFO=webxpress; domain=.fidelity.com; path=/; secure
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
         public extern static void mbSetCookieEnabled(mbWebView webView, bool enable);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall,CharSet =CharSet.Unicode)]
         public extern static void mbSetCookieJarPath(mbWebView webView, string path);
+        [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public extern static void mbSetCookieJarFullPath(mbWebView webView, string path);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
         public extern static void mbSetUserAgent(mbWebView webView, utf8 userAgent);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
@@ -560,6 +558,16 @@ namespace Tnelab.MiniBlinkV
         public extern static void mbOnLoadingFinish(mbWebView webView, mbLoadingFinishCallback callback, IntPtr param);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
         public extern static void mbOnDownload(mbWebView webView, mbDownloadCallback callback, IntPtr param);
+        [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
+        public extern static void mbOnAlertBox(mbWebView webView, mbAlertBoxCallback callback, IntPtr param);
+        [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
+        public extern static void mbOnConfirmBox(mbWebView webView, mbConfirmBoxCallback callback, IntPtr param);
+        [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
+        public extern static void mbOnPromptBox(mbWebView webView, mbPromptBoxCallback callback, IntPtr param);
+        [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
+        public extern static void mbOnNetGetFavicon(mbWebView webView, mbNetGetFaviconCallback callback, IntPtr param);
+        [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
+        public extern static void mbOnConsole(mbWebView webView, mbConsoleCallback callback, IntPtr param);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
         public extern static void mbGoBack(mbWebView webView);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
@@ -601,9 +609,9 @@ namespace Tnelab.MiniBlinkV
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
         public extern static void mbShowWindow(mbWebView webWindow, bool show);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
-        public extern static void mbLoadURL(mbWebView webView, utf8 url);
+        public extern static void mbLoadURL(mbWebView webView, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 url);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
-        public extern static void mbLoadHtmlWithBaseUrl(mbWebView webView, utf8 html, utf8 baseUrl);
+        public extern static void mbLoadHtmlWithBaseUrl(mbWebView webView, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 html, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 baseUrl);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
         public extern static HDC mbGetLockedViewDC(mbWebView webView);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
@@ -615,15 +623,16 @@ namespace Tnelab.MiniBlinkV
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
         public extern static bool mbJsToBoolean(mbJsExecState es, mbJsValue v);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
-        public extern static utf8_ mbJsToString(mbJsExecState es, mbJsValue v);
+        [return:MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]
+        public extern static utf8 mbJsToString(mbJsExecState es, mbJsValue v);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
         public extern static void mbOnJsQuery(mbWebView webView, mbJsQueryCallback callback, IntPtr param);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
-        public extern static void mbResponseQuery(mbWebView webView, int64_t queryId, int customMsg, utf8_ response);
+        public extern static void mbResponseQuery(mbWebView webView, int64_t queryId, int customMsg, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 response);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
-        public extern static void mbRunJs(mbWebView webView, mbWebFrameHandle frameId, utf8_ script, bool isInClosure, mbRunJsCallback callback, IntPtr param, IntPtr unuse);
+        public extern static void mbRunJs(mbWebView webView, mbWebFrameHandle frameId, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 script, bool isInClosure, mbRunJsCallback callback, IntPtr param, IntPtr unuse);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
-        public extern static mbJsValue mbRunJsSync(mbWebView webView, mbWebFrameHandle frameId, utf8_ script, bool isInClosure);
+        public extern static mbJsValue mbRunJsSync(mbWebView webView, mbWebFrameHandle frameId, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]utf8 script, bool isInClosure);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
         public extern static mbWebFrameHandle mbWebFrameGetMainFrame(mbWebView webView);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
@@ -636,49 +645,46 @@ namespace Tnelab.MiniBlinkV
         public extern static bool mbUtilIsRegistered(string defaultPath);
         [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
         public extern static void mbInit(ref mbSettings settings);
-        [DllImport(MiniBlinkVDll, CallingConvention = CallingConvention.StdCall)]
-        public extern static void mbOnConsole(mbWebView webView, mbConsoleCallback callback, IntPtr param);
 
 
-
-        const string MiniBlinkDll = "node.dll";
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public delegate jsValue jsGetPropertyCallback(jsExecState es, jsValue obj, string propertyName);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public delegate bool jsSetPropertyCallback(jsExecState es, jsValue obj, string propertyName, jsValue value);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public delegate jsValue jsCallAsFunctionCallback(jsExecState es, jsValue obj, jsValue[] args, int argCount);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public delegate void jsFinalizeCallback(jsData data);
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
-        public class jsData
-        {
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 100)]
-            public string typeName;
-            [MarshalAs(UnmanagedType.FunctionPtr)]
-            public jsGetPropertyCallback propertyGet;
-            [MarshalAs(UnmanagedType.FunctionPtr)]
-            public jsSetPropertyCallback propertySet;
-            [MarshalAs(UnmanagedType.FunctionPtr)]
-            public jsFinalizeCallback finalize;
-            [MarshalAs(UnmanagedType.FunctionPtr)]
-            public jsCallAsFunctionCallback callAsFunction;
-        }
-        [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
-        public extern static jsValue jsObject(jsExecState es, IntPtr obj);
-        [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
-        public extern static jsExecState wkeGlobalExec(wkeWebView webView);
-        [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
-        public extern static jsValue jsGetGlobal(jsExecState es, string prop);
-        [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
-        public extern static jsValue jsCall(jsExecState es, jsValue func, jsValue thisObject, jsValue[] args, int argCount);
-        [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
-        public extern static jsValue jsGet(jsExecState es, jsValue obj, string prop);
-        [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
-        public extern static jsValue jsInt(int n);
-        [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
-        public extern static jsValue jsUndefined();
-        [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
-        public extern static void jsGC();
+        //const string MiniBlinkDll = "node.dll";
+        //[UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        //public delegate jsValue jsGetPropertyCallback(jsExecState es, jsValue obj, string propertyName);
+        //[UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        //public delegate bool jsSetPropertyCallback(jsExecState es, jsValue obj, string propertyName, jsValue value);
+        //[UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        //public delegate jsValue jsCallAsFunctionCallback(jsExecState es, jsValue obj, jsValue[] args, int argCount);
+        //[UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        //public delegate void jsFinalizeCallback(jsData data);
+        //[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+        //public class jsData
+        //{
+        //    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 100)]
+        //    public string typeName;
+        //    [MarshalAs(UnmanagedType.FunctionPtr)]
+        //    public jsGetPropertyCallback propertyGet;
+        //    [MarshalAs(UnmanagedType.FunctionPtr)]
+        //    public jsSetPropertyCallback propertySet;
+        //    [MarshalAs(UnmanagedType.FunctionPtr)]
+        //    public jsFinalizeCallback finalize;
+        //    [MarshalAs(UnmanagedType.FunctionPtr)]
+        //    public jsCallAsFunctionCallback callAsFunction;
+        //}
+        //[DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
+        //public extern static jsValue jsObject(jsExecState es, IntPtr obj);
+        //[DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
+        //public extern static jsExecState wkeGlobalExec(wkeWebView webView);
+        //[DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
+        //public extern static jsValue jsGetGlobal(jsExecState es, string prop);
+        //[DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
+        //public extern static jsValue jsCall(jsExecState es, jsValue func, jsValue thisObject, jsValue[] args, int argCount);
+        //[DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
+        //public extern static jsValue jsGet(jsExecState es, jsValue obj, string prop);
+        //[DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
+        //public extern static jsValue jsInt(int n);
+        //[DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
+        //public extern static jsValue jsUndefined();
+        //[DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
+        //public extern static void jsGC();
     }
 }

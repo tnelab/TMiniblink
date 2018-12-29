@@ -13,14 +13,14 @@ namespace Tnelab.HtmlView
     enum TneQueryId { NativeMap = 1, RegisterNativeMap = 2, DeleteNativeObject = 3 ,GetThisFormHashCode=4}
     interface IJsNativeMaper
     {
-        long AddBrowser(WebBrowser browser, Func<object> GetParentControl);
-        void RemoveBrowser(WebBrowser browser);
+        long AddBrowser(IWebBrowser browser, Func<object> GetParentControl);
+        void RemoveBrowser(IWebBrowser browser);
     }
     sealed class JsNativeMaper: IJsNativeMaper
     {
         public static JsNativeMaper This { get; } = new JsNativeMaper();
         static readonly Dictionary<string, string> NativeTypeDic = new Dictionary<string, string>();
-        static void OnJavaScriptNativeMap(WebBrowser browser,JsQueryEventArgs args)
+        static void OnJavaScriptNativeMap(IWebBrowser browser,JsQueryEventArgs args)
         {
             MapResult result = null;
             var info = This.GetBrowserInfo(browser);
@@ -49,7 +49,7 @@ namespace Tnelab.HtmlView
                 browser.ResponseJsQuery(args.WebView, args.QueryId, args.CustomMsg, resultJson);
             }
         }
-        void OnRegisterNativeMap(WebBrowser browser,JsQueryEventArgs args)
+        void OnRegisterNativeMap(IWebBrowser browser,JsQueryEventArgs args)
         {
             var regInfo = JsonConvert.DeserializeObject<RegisterNativeMapInfo>(args.Request);
             var nativeTypeName = regInfo.NativeTypeName;
@@ -68,7 +68,7 @@ namespace Tnelab.HtmlView
             var info = GetBrowserInfo(browser);
             browser.ResponseJsQuery(args.WebView, args.QueryId, args.CustomMsg, "OK");
         }
-        static void OnDeleteNativeObject(WebBrowser browser, JsQueryEventArgs args)
+        static void OnDeleteNativeObject(IWebBrowser browser, JsQueryEventArgs args)
         {
             var info = This.GetBrowserInfo(browser);
             var hashCode = long.Parse(args.Request);
@@ -76,7 +76,7 @@ namespace Tnelab.HtmlView
             browser.ResponseJsQuery(args.WebView, args.QueryId, args.CustomMsg, "OK");
         }
         //JsNativeMaper() { }
-        public long AddBrowser(WebBrowser browser, Func<object> getParentControl)
+        public long AddBrowser(IWebBrowser browser, Func<object> getParentControl)
         {
             if (browser == null)
                 throw new ArgumentException("浏览器对象不能为空", "browser");
@@ -85,17 +85,17 @@ namespace Tnelab.HtmlView
                 switch ((TneQueryId)args.CustomMsg)
                 {
                     case TneQueryId.RegisterNativeMap:
-                        OnRegisterNativeMap(webBrowser as WebBrowser, args);
+                        OnRegisterNativeMap(webBrowser as IWebBrowser, args);
                         break;
                     case TneQueryId.NativeMap:
-                        OnJavaScriptNativeMap(webBrowser as WebBrowser, args);
+                        OnJavaScriptNativeMap(webBrowser as IWebBrowser, args);
                         break;
                     case TneQueryId.DeleteNativeObject:
-                        OnDeleteNativeObject(webBrowser as WebBrowser, args);
+                        OnDeleteNativeObject(webBrowser as IWebBrowser, args);
                         break;
                     case TneQueryId.GetThisFormHashCode:
                         {
-                            var wb = webBrowser as WebBrowser;
+                            var wb = webBrowser as IWebBrowser;
                             var wbinfo = GetBrowserInfo(wb);
                             wb.ResponseJsQuery(args.WebView, args.QueryId, args.CustomMsg, wbinfo.ParentControlId.ToString());
                         }
@@ -108,7 +108,7 @@ namespace Tnelab.HtmlView
             WebBrowserInfoDic.Add(browser, info);            
             return info.ParentControlId;
         }
-        public void RemoveBrowser(WebBrowser browser)
+        public void RemoveBrowser(IWebBrowser browser)
         {
             if (WebBrowserInfoDic.ContainsKey(browser))
             {
@@ -116,8 +116,8 @@ namespace Tnelab.HtmlView
                 WebBrowserInfoDic.Remove(browser);
             }
         }
-        readonly Dictionary<WebBrowser,WebBrowserInfo> WebBrowserInfoDic = new Dictionary<WebBrowser, WebBrowserInfo>();
-        WebBrowserInfo GetBrowserInfo(WebBrowser browser)
+        readonly Dictionary<IWebBrowser,WebBrowserInfo> WebBrowserInfoDic = new Dictionary<IWebBrowser, WebBrowserInfo>();
+        WebBrowserInfo GetBrowserInfo(IWebBrowser browser)
         {
             return WebBrowserInfoDic.Values.SingleOrDefault(item => item.WebBrowser == browser);
         }

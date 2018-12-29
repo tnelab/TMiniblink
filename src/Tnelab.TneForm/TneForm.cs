@@ -202,12 +202,26 @@ namespace Tnelab.HtmlView
                 CreateWindow();
             NativeMethods.ShowWindow(this.Handle, NativeMethods.SW_HIDE);
         }
+        public void Move()
+        {
+            if (this.Handle == IntPtr.Zero)
+                CreateWindow();
+            NativeMethods.ReleaseCapture();
+            NativeMethods.SendMessage(this.Handle, NativeMethods.WM_SYSCOMMAND, NativeMethods.SC_MOVE | NativeMethods.HTCAPTION, 0);
+        }
         bool isBorderRect_ = false;
         int WinProc(IntPtr hWnd,uint message,uint wParam,uint lParam)
         {
             if (webBrowser_ == null)
             {
-                webBrowser_ = new WebBrowser(hWnd);
+                TneApplication.ReadOnlyVipFlag = true;
+                if (TneApplication.IsVip) {
+                    webBrowser_ = new WebBrowserByVip(hWnd);
+                }
+                else
+                {
+                    webBrowser_ = new WebBrowserByWke(hWnd);
+                }
                 JsNativeMaper.This.AddBrowser(this.webBrowser_, () => this);
                 webBrowser_.TitleChanged += (sender, args) =>
                 {
@@ -278,7 +292,7 @@ namespace Tnelab.HtmlView
         long WindowIndex_ { get; set; }
         string ClassName_ { get => $"TneForm{this.WindowIndex_}"; }
         bool IsDesdroyed_ = false;
-        WebBrowser webBrowser_;
+        IWebBrowser webBrowser_;
         void CreateWindow()
         {
             if (this.StartPosition == StartPosition.CenterScreen || (this.StartPosition == StartPosition.CenterParent && this.Parent == null))

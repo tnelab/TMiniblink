@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Tnelab.MiniblinkCore" Version="1.0.6" />
+    <PackageReference Include="Tnelab.MiniblinkCore" Version="1.0.7" />
   </ItemGroup>
 
   <ItemGroup>

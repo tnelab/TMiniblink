@@ -10,9 +10,9 @@ using static Tnelab.MiniBlinkV.NativeMethods;
 
 namespace Tnelab.HtmlView
 {
-    public enum MapAction { Create = 1, SetAccess = 2, GetAccess = 3, StaticInvoke = 4, InstanceInvoke = 5 }
-    public enum MapDataType { NativeObjectId = 1, Value = 2, FunctionId = 3 };
-    public class MapDataInfo
+    enum MapAction { Create = 1, SetAccess = 2, GetAccess = 3, StaticInvoke = 4, InstanceInvoke = 5 }
+    enum MapDataType { NativeObjectId = 1, Value = 2, FunctionId = 3 };
+    class MapDataInfo
     {
         public MapDataType DataType { get; set; }
         public object Value { get; set; }
@@ -25,9 +25,9 @@ namespace Tnelab.HtmlView
         public string GenericInfo;
         public int GcInfo;
         public object RealObject;
-        public jsData JsGC;
+        public Tnelab.MiniBlink.NativeMethods.jsData JsGC;
     }
-    public class MapActionInfo
+    class MapActionInfo
     {
         public MapAction Action { get; set; }
         public string Path { get; set; }
@@ -35,19 +35,28 @@ namespace Tnelab.HtmlView
         public int Id { get; set; }
         public string Name { get; set; }
     }
-    public class MapResult
+    class MapResult
     {
         public bool Status;
         public MapDataInfo Data;
     }
-    public class RegisterNativeMapInfo
+    class RegisterNativeMapInfo
     {
         public string NativeTypeName { get; set; }
         public string JsTypeName { get; set; }
     }
-    public class OnCallJsInfo
+    class OnCallJsInfo
     {
         public bool Status { get; set; }
         public Object Data { get; set; }
+    }
+    class JsQueryEventArgs
+    {
+        public IntPtr WebView { get; set; }
+        public IntPtr Param { get; set; }
+        public IntPtr ES { get; set; }
+        public Int64 QueryId { get; set; }
+        public int CustomMsg { get; set; }
+        public string Request { get; set; }
     }
 }

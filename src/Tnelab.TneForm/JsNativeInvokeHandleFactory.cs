@@ -10,7 +10,7 @@ using static Tnelab.MiniBlinkV.NativeMethods;
 
 namespace Tnelab.HtmlView
 {
-    public interface IJsNavateInvokeHandle
+    interface IJsNavateInvokeHandle
     {
         MapResult Handle();
     }
@@ -352,7 +352,7 @@ namespace Tnelab.HtmlView
             //    }
             //    return (lnativeType, lisAction);
             //}
-            object IsFunctionId(Type theNativeType, bool theIsAction, WebBrowser theBrowser,string script)
+            object IsFunctionId(Type theNativeType, bool theIsAction, IWebBrowser theBrowser,string script)
             {
                 var paramTypes = theNativeType.GetGenericArguments();
                 List<ParameterExpression> paramExps = new List<ParameterExpression>();
@@ -442,7 +442,7 @@ namespace Tnelab.HtmlView
                 return r;
             }
             var isAction = (bool)objs[0];
-            var browser = objs[1] as WebBrowser;
+            var browser = objs[1] as IWebBrowser;
             var script = objs[2].ToString();
             var args = new string[objs.Length - 3];
             for (var i = 0; i < args.Length; i++)
@@ -459,7 +459,7 @@ namespace Tnelab.HtmlView
         void ActionCallJs(params object[] objs)
         {
             var isAction = (bool)objs[0];
-            var browser = objs[1] as WebBrowser;
+            var browser = objs[1] as IWebBrowser;
             var script = objs[2].ToString();
             var args = new string[objs.Length - 3];
             for (var i = 0; i < args.Length; i++)

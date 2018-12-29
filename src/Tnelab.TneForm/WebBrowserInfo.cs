@@ -10,14 +10,14 @@ namespace Tnelab.HtmlView
 {
     class WebBrowserInfo
     {
-        public WebBrowserInfo(WebBrowser browser, Func<object> getParentControl)
+        public WebBrowserInfo(IWebBrowser browser, Func<object> getParentControl)
         {
             ParentControlId = this.CreateId();
             this.WebBrowser = browser;
             this.GetParentControl = getParentControl;
         }
         public long ParentControlId { get; private set; }
-        public WebBrowser WebBrowser { get; private set; }
+        public IWebBrowser WebBrowser { get; private set; }
         public Func<object> GetParentControl { get; private set; }
         public long AddNativeObject(object obj,string genericInfo)
         {
@@ -31,11 +31,11 @@ namespace Tnelab.HtmlView
             info.RealObject = obj;
             info.GenericInfo = genericInfo;
             info.GcInfo = 1;
-            var jsGc= new jsData();
+            var jsGc= new Tnelab.MiniBlink.NativeMethods.jsData();
             jsGc.typeName = "NativeObjectGC";
             jsGc.propertyGet = (es, jobj, name) =>
             {
-                return jsUndefined();
+                return Tnelab.MiniBlink.NativeMethods.jsUndefined();
             };
             jsGc.propertySet = (es, jobj, name, jv) =>
             {
@@ -43,34 +43,23 @@ namespace Tnelab.HtmlView
             };
             jsGc.callAsFunction = (es,jobj,args,argsCount) =>
             {
-                return jsUndefined();
+                return Tnelab.MiniBlink.NativeMethods.jsUndefined();
             };
-            var gcPtr = Marshal.AllocHGlobal(Marshal.SizeOf<jsData>());
+            var gcPtr = Marshal.AllocHGlobal(Marshal.SizeOf<MiniBlink.NativeMethods.jsData>());
             Marshal.StructureToPtr(jsGc, gcPtr, true);
 
-            jsGc.finalize = (data) =>
+            jsGc.finalize = (ref Tnelab.MiniBlink.NativeMethods.jsData data) =>
             {
                 this.DestroyNativeObject(id,true);
                 Marshal.FreeHGlobal(gcPtr);
             };
-            var t = new TaskCompletionSource<string>();
-            var script = "return 'GC'";
-            var scriptDatas = Encoding.UTF8.GetBytes(script + "\0");
-            var scriptPtr = Marshal.AllocHGlobal(scriptDatas.Length);
-            Marshal.Copy(scriptDatas, 0, scriptPtr, scriptDatas.Length);            
-            this.WebBrowser.UIInvoke(() => {
-                mbRunJs(this.WebBrowser.WebView, mbWebFrameGetMainFrame(this.WebBrowser.WebView), scriptPtr, true, (webView, param, es, v) => {
-                    var gcValue = jsObject(es, gcPtr);
-                    var idValue = jsInt((int)id);
-                    var tnelabValue = jsGetGlobal(es, "Tnelab");
-                    var onSetGCValue = jsGet(es, tnelabValue, "OnSetGC");
-                    jsCall(es, onSetGCValue, tnelabValue, new long[] { idValue, gcValue }, 2);                    
-                    t.SetResult("ISOK");
-                }, IntPtr.Zero, IntPtr.Zero);
-            });
-            t.Task.Wait(5 * 1000);
+            var tes = MiniBlink.NativeMethods.wkeGlobalExec(this.WebBrowser.WebView);
+            var gcValue = MiniBlink.NativeMethods.jsObject(tes, gcPtr);
+            var idValue = MiniBlink.NativeMethods.jsInt((int)id);
+            var tnelabValue = MiniBlink.NativeMethods.jsGetGlobal(tes, "Tnelab");
+            var onSetGCValue = MiniBlink.NativeMethods.jsGet(tes, tnelabValue, "OnSetGC");
+            MiniBlink.NativeMethods.jsCall(tes, onSetGCValue, tnelabValue, new long[] { idValue, gcValue }, 2);
             info.JsGC = jsGc;
-            Marshal.FreeHGlobal(scriptPtr);
             NativeObjectInfoDic.Add(id, info);
             return id;
         }
