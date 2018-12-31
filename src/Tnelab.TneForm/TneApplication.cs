@@ -14,11 +14,6 @@ namespace Tnelab.HtmlView
             NativeMethods.MSG msg = new NativeMethods.MSG();
             while (NativeMethods.GetMessage(ref msg, IntPtr.Zero, 0, 0))
             {
-                //zmg
-                if (msg.message == Tnelab.HtmlView.NativeMethods.WM_LBUTTONDOWN)
-                {
-
-                }
                 NativeMethods.TranslateMessage(ref msg);
 
                 NativeMethods.DispatchMessage(ref msg);

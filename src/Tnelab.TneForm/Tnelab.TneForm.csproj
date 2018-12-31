@@ -13,7 +13,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>x86</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <TypeScriptTarget>ES2015</TypeScriptTarget>
+    <TypeScriptTarget>ES2017</TypeScriptTarget>
     <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
     <TypeScriptModuleKind>AMD</TypeScriptModuleKind>
     <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
@@ -30,7 +30,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="TneApp.js" />
-    <None Remove="TneForm.ts" />
+    <None Remove="TneForm.cs.ts" />
     <None Remove="TneMap.ts" />
   </ItemGroup>
   <ItemGroup>
@@ -38,6 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <TypeScriptCompile Include="TneForm.cs.ts" />
     <TypeScriptCompile Include="TneMap.ts" />
   </ItemGroup>
 
@@ -52,10 +53,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Tnelab.MiniBlinkV\Tnelab.MiniBlinkV.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <TypeScriptCompile Include="TneForm.ts" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,0 +1,40 @@
+﻿html, body {
+    margin: 0;
+    padding: 0;
+    cursor: default;
+}
+html {
+    background: #ffffff;
+    background: rgba(255, 255, 255, 0.7);
+}
+body {
+    /*background: #ff0000;
+    background: rgba(255, 0, 0, 0.2);*/
+}
+.caption_bar {
+    color: white;
+    line-height: 30px;
+    height: 30px;
+    background-color: cadetblue;
+}
+.caption {
+    color: white;
+    margin-left:2px;
+    padding:0;
+    float:left;
+}
+.caption_button{
+    color: red;
+    float:right;
+    margin-right:10px;
+}
+.app_icon {
+    padding: 0;
+    margin:4px;
+    width: 22px;
+    height: 22px;
+    float: left;
+}
+.window_client{
+
+}

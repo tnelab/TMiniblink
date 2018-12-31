@@ -744,11 +744,11 @@ namespace Tnelab.MiniBlink
         [return: MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(MiniBlinkV.Utf8Marshaler))]
         public extern static utf8 jsToString(jsExecState es, jsValue v);
         [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl,CharSet =CharSet.Unicode)]
-        public extern static string jsToStringW(jsExecState es, jsValue v);
+        public extern static IntPtr jsToStringW(jsExecState es, jsValue v);
         [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl, BestFitMapping = false, ThrowOnUnmappableChar = true)]
         public extern static void wkeConfigure(ref wkeSettings settings);
         [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
-        [return: MarshalAs(UnmanagedType.Bool)]
+        [return: MarshalAs(UnmanagedType.I1)]
         public extern static bool wkeIsInitialize();
         [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
         public extern static void wkeSetViewSettings(wkeWebView webView, ref wkeViewSettings settings);

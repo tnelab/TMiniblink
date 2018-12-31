@@ -17,15 +17,23 @@
   <ItemGroup>
     <None Remove="cookies.dat" />
     <None Remove="Default.js" />
+    <None Remove="default.png" />
     <None Remove="Default.ts" />
+    <None Remove="UI\css\window.css" />
     <None Remove="UI\Default.html" />
+    <None Remove="UI\Script\window.js" />
+    <None Remove="UI\Script\window.ts" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="default.png" />
+    <EmbeddedResource Include="UI\css\window.css" />
     <EmbeddedResource Include="UI\Script\Default.js" />
     <EmbeddedResource Include="UI\Default.html">
       <Generator></Generator>
     </EmbeddedResource>
+    <EmbeddedResource Include="UI\Script\window.js" />
+    <TypeScriptCompile Include="UI\Script\window.ts" />
   </ItemGroup>
 
   <ItemGroup>
@@ -58,7 +66,7 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <TypeScriptTarget>ES2015</TypeScriptTarget>
+    <TypeScriptTarget>ES2017</TypeScriptTarget>
     <TypeScriptExperimentalDecorators>true</TypeScriptExperimentalDecorators>
     <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
     <TypeScriptModuleKind>AMD</TypeScriptModuleKind>

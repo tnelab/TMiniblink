@@ -31,7 +31,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tnelab.TneAppLibForNetStand
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tnelab.TneAppMapTool", "Tnelab.TneAppMapTool\Tnelab.TneAppMapTool.csproj", "{8077DC46-BFAE-433B-897C-5B576BE1BE39}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tnelab.TneForm.Test.BLL", "Tnelab.TneForm.Test.BLL\Tnelab.TneForm.Test.BLL.csproj", "{58077667-E8FE-4BC0-B883-CFCED2B7CB2E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tnelab.TneForm.Test.BLL", "Tnelab.TneForm.Test.BLL\Tnelab.TneForm.Test.BLL.csproj", "{58077667-E8FE-4BC0-B883-CFCED2B7CB2E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

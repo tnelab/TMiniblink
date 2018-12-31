@@ -418,7 +418,14 @@ namespace Tnelab.HtmlView
                 obj = dataInfo.Value;
                 if (nativeType != null)
                 {
-                    obj = Convert.ChangeType(dataInfo.Value, nativeType);
+                    if (typeof(Enum).IsAssignableFrom(nativeType))
+                    {
+                        obj = Enum.Parse(nativeType, dataInfo.Value.ToString());
+                    }
+                    else
+                    {
+                        obj = Convert.ChangeType(dataInfo.Value, nativeType);
+                    }
                 }
             }
             if (nativeType == null)
@@ -450,7 +457,9 @@ namespace Tnelab.HtmlView
                 args[i] = NativeToJsValue(objs[i + 3]);
             }
             var toRun = $"return Tnelab.OnCallJs(({script})({string.Join(",", args)}))";
-            var result = browser.RunJs(toRun);
+            var task= browser.RunJs(toRun);
+            task.Wait();
+            var result = task.Result.value;
             var robj = JsonConvert.DeserializeObject<OnCallJsInfo>(result);
             if (!robj.Status)
                 throw new Exception(robj.Data.ToString());
@@ -467,7 +476,9 @@ namespace Tnelab.HtmlView
                 args[i] = NativeToJsValue(objs[i + 3]);
             }
             var toRun = $"return Tnelab.OnCallJs(({script})({string.Join(",", args)}))";
-            var result=browser.RunJs(toRun);
+            var task= browser.RunJs(toRun);
+            task.Wait();
+            var result = task.Result.value;
             var robj = JsonConvert.DeserializeObject<OnCallJsInfo>(result);
             if (!robj.Status)
                 throw new Exception(robj.Data.ToString());

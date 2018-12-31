@@ -7,19 +7,21 @@ namespace Tnelab.MiniBlinkV
 {
     class Utf8Marshaler : ICustomMarshaler
     {
-        IntPtr dataPtr_ = IntPtr.Zero;
         int size_ = 0;
         public void CleanUpManagedData(object ManagedObj)
         {
             
         }
-
+        object ptrLock_ = new object();
         public void CleanUpNativeData(IntPtr pNativeData)
         {
-            if (dataPtr_ != IntPtr.Zero)
+            lock (ptrLock_)
             {
-                Marshal.FreeHGlobal(this.dataPtr_);
-                this.dataPtr_ = IntPtr.Zero;
+                if(ptr_.ToInt64()!=pNativeData.ToInt64()&&ptr_!=IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(ptr_);
+                }
+                this.size_ = 0;
             }
         }
 
@@ -27,19 +29,18 @@ namespace Tnelab.MiniBlinkV
         {
             return this.size_;
         }
-
+        IntPtr ptr_ = IntPtr.Zero;
         public IntPtr MarshalManagedToNative(object ManagedObj)
         {
-            var datas = Encoding.UTF8.GetBytes(ManagedObj.ToString());
-            var ptr = Marshal.AllocHGlobal(datas.Length);
-            Marshal.Copy(datas, 0, ptr, datas.Length);
-            if (this.dataPtr_ != IntPtr.Zero)
+            lock (ptrLock_)
             {
-                throw new Exception("封送异常");
+                var datas = Encoding.UTF8.GetBytes(ManagedObj.ToString() + "\0");
+                var ptr = Marshal.AllocHGlobal(datas.Length);
+                Marshal.Copy(datas, 0, ptr, datas.Length);
+                ptr_ = ptr;
+                this.size_ = datas.Length;
+                return ptr;
             }
-            this.size_ = datas.Length;
-            this.dataPtr_ = ptr;
-            return ptr;
         }
 
         public object MarshalNativeToManaged(IntPtr pNativeData)
@@ -52,6 +53,7 @@ namespace Tnelab.MiniBlinkV
                 pNativeData = pNativeData + 1;
                 b = Marshal.ReadByte(pNativeData);
             }
+            size_ = datas.Count;
             var str = Encoding.UTF8.GetString(datas.ToArray());
             return str;
         }

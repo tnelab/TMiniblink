@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Tnelab.HtmlView
 {
@@ -12,6 +13,7 @@ namespace Tnelab.HtmlView
         string Url { get; set; }
         (int result,bool isHandle) ProcessWindowMessage(IntPtr hwnd, uint msg, uint wParam, uint lParam);
         void ResponseJsQuery(IntPtr webView, Int64 queryId, int customMsg, string response);
-        string RunJs(string script);
+        Task<(IntPtr view,IntPtr es,string value)> RunJs(string script,Action<IntPtr,IntPtr ,long> hook=null);
+        void UIInvoke(Action action);
     }
 }

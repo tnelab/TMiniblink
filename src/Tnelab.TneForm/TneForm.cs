@@ -1,14 +1,17 @@
-﻿using System;
+﻿//tne://to_ts?namespace=Tnelab&TneAppPath=./TneMap.ts
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using static Tnelab.MiniBlinkV.NativeMethods;
+using System.Reflection;
+using System.Linq;
 
 namespace Tnelab.HtmlView
 {
-    public enum StartPosition { Manual, CenterScreen, CenterParent }
-    public enum WindowState { Maximized, Normal , Minimized }
+    public enum StartPosition { Manual=1, CenterScreen=2, CenterParent=3 }
+    public enum WindowState { Maximized=1, Normal=2 , Minimized=3 }
     public sealed class TneForm
     {        
         public IntPtr Handle { get; internal set; }
@@ -157,32 +160,22 @@ namespace Tnelab.HtmlView
         public TneForm()
         {
             this.WindowIndex_ = NewWindowIndex();
-            winProcDelegate_ = this.WinProc;
-            var className = $"TneForm{WindowIndex_}";
-            NativeMethods.WNDCLASS wcex = new NativeMethods.WNDCLASS();
-            wcex.style = NativeMethods.CS_HREDRAW | NativeMethods.CS_VREDRAW | NativeMethods.CS_OWNDC;
-            wcex.lpfnWndProc = Marshal.GetFunctionPointerForDelegate(winProcDelegate_);
-            wcex.lpszClassName = className;
-            wcex.hInstance = System.Diagnostics.Process.GetCurrentProcess().Handle;
-            var result = NativeMethods.RegisterClassW(ref wcex);
-            if (result == IntPtr.Zero)
-            {
-                throw new Exception($"注册窗口类失败,错误代码:{Marshal.GetLastWin32Error()}");
-            }
         }
         public void Close()
         {
-            if (this.IsDesdroyed_)
-                throw new Exception("窗口已经被释放");
-            if (this.Handle == IntPtr.Zero)
-                CreateWindow();
-            if (this.Parent != null)
-            {                
-                NativeMethods.EnableWindow(this.Parent.Handle, true);
-                NativeMethods.SetActiveWindow(this.Parent.Handle);
-            }
-            NativeMethods.CloseWindow(this.Handle);
-            NativeMethods.DestroyWindow(this.Handle);
+            this.webBrowser_.UIInvoke(() => { 
+                if (this.IsDesdroyed_)
+                    throw new Exception("窗口已经被释放");
+                if (this.Handle == IntPtr.Zero)
+                    CreateWindow();
+                if (this.Parent != null)
+                {                
+                    NativeMethods.EnableWindow(this.Parent.Handle, true);
+                    NativeMethods.SetActiveWindow(this.Parent.Handle);
+                }
+                NativeMethods.CloseWindow(this.Handle);
+                NativeMethods.DestroyWindow(this.Handle);
+            });
         }
         public void ShowDialog() { }
         public void Show() {
@@ -204,81 +197,98 @@ namespace Tnelab.HtmlView
         }
         public void Move()
         {
+            WindowState_ = WindowState.Normal;
             if (this.Handle == IntPtr.Zero)
                 CreateWindow();
             NativeMethods.ReleaseCapture();
-            NativeMethods.SendMessage(this.Handle, NativeMethods.WM_SYSCOMMAND, NativeMethods.SC_MOVE | NativeMethods.HTCAPTION, 0);
+            NativeMethods.PostMessageW(this.Handle, NativeMethods.WM_SYSCOMMAND, NativeMethods.SC_MOVE | NativeMethods.HTCAPTION, 0);
+        }
+        string icon_;
+        public string Icon
+        {
+            get
+            {
+                return icon_;
+            }
+            set
+            {
+                icon_ = value;
+                if (this.Handle!=IntPtr.Zero)
+                {
+                    var assembly = Assembly.GetEntryAssembly();
+                    var names = assembly.GetManifestResourceNames();
+                    var path = names.Single(it => it.ToLower().EndsWith(icon_.ToLower()));
+                    using (var stream = assembly.GetManifestResourceStream(path))
+                    {
+                        var datas = new byte[stream.Length];
+                        stream.Read(datas, 0, datas.Length);
+                        var ptr = Marshal.AllocHGlobal((int)stream.Length);
+                        Marshal.Copy(datas, 0, ptr, datas.Length);
+                        var hIcon = NativeMethods.CreateIconFromResourceEx(ptr, datas.Length, 1, 0x30000, 32, 32, NativeMethods.LR_DEFAULTCOLOR);
+                        NativeMethods.SendMessageW(this.Handle, NativeMethods.WM_SETICON, NativeMethods.ICON_BIG, (uint)hIcon);
+                        NativeMethods.SendMessageW(this.Handle, NativeMethods.WM_SETICON, NativeMethods.ICON_SMALL, (uint)hIcon);
+                        Marshal.FreeHGlobal(ptr);
+                    }
+                }
+            }
         }
         bool isBorderRect_ = false;
         int WinProc(IntPtr hWnd,uint message,uint wParam,uint lParam)
         {
-            if (webBrowser_ == null)
-            {
-                TneApplication.ReadOnlyVipFlag = true;
-                if (TneApplication.IsVip) {
-                    webBrowser_ = new WebBrowserByVip(hWnd);
-                }
-                else
-                {
-                    webBrowser_ = new WebBrowserByWke(hWnd);
-                }
-                JsNativeMaper.This.AddBrowser(this.webBrowser_, () => this);
-                webBrowser_.TitleChanged += (sender, args) =>
-                {
-                    this.Title = args;
-                };
-                
-                this.Url = this.Url;
-            }
             var result = 0;
             var isHandled = false;
-            if (message == NativeMethods.WM_SETCURSOR&&isBorderRect_)
+            if (message == NativeMethods.WM_NCHITTEST && SizeAble)
             {
-                result = NativeMethods.DefWindowProcW(hWnd, message, wParam, lParam);
-                isHandled = true;
-            }
-            
-            if(webBrowser_!=null&&!isHandled)
-                (result, isHandled) = webBrowser_.ProcessWindowMessage(hWnd, message, wParam, lParam);
-            if (webBrowser_==null||!isHandled)
-            {
-                switch (message)
+                result = GetBorderRect(lParam);
+                isBorderRect_ = result != 0;
+                if (isBorderRect_)
                 {
-                    case NativeMethods.WM_NCHITTEST:
-                        if (SizeAble)
-                        {
-                            result = GetBorderRect(lParam);
-                            isBorderRect_ = result != 0;
-                        }
-                        if(!isBorderRect_)
-                        {
-                            result = NativeMethods.DefWindowProcW(hWnd, message, wParam, lParam);
-                        }
-                        break;
-                    case NativeMethods.WM_SETTINGCHANGE:
-                        if (NativeMethods.IsZoomed(hWnd))
-                        {
-                            this.Hide();
-                            this.WindowState = WindowState.Maximized;
-                        }
-                        break;
-                    case NativeMethods.WM_GETMINMAXINFO:
-                        WmGetMinMaxInfo(hWnd, lParam);
-                        break;
-                    case NativeMethods.WM_DESTROY:
-                        if (this == TneApplication.MainForm)
-                            NativeMethods.PostQuitMessage(0);
-                        else
-                            result = NativeMethods.DefWindowProcW(hWnd, message, wParam, lParam);
-                        this.IsDesdroyed_ = true;
-                        break;
-                    case NativeMethods.WM_MOVE:
-                        //break;
-                    default:
-                        result = NativeMethods.DefWindowProcW(hWnd, message, wParam, lParam);
-                        break;
+                    return result;
                 }
             }
+            if (message == NativeMethods.WM_SETCURSOR && isBorderRect_)
+            {
+                result=NativeMethods.DefWindowProcW(hWnd, message, wParam, lParam);
+                isBorderRect_ = false;
+                return result;
+            }
+            if (webBrowser_ != null)
+            {
+                (result, isHandled) = webBrowser_.ProcessWindowMessage(hWnd, message, wParam, lParam);
+                if (isHandled)
+                    return result;
+            }
+
+            switch (message)
+            {
+                //case NativeMethods.WM_SETFOCUS:
+                //    NativeMethods.SetFocus(hWnd);
+                //    isHandled = false;
+                //    break;
+                //case NativeMethods.WM_KILLFOCUS:
+                //    break;
+                case NativeMethods.WM_SETTINGCHANGE:
+                    if (NativeMethods.IsZoomed(hWnd))
+                    {
+                        this.Hide();
+                        this.WindowState = WindowState.Maximized;
+                    }
+                    break;
+                case NativeMethods.WM_GETMINMAXINFO:
+                    WmGetMinMaxInfo(hWnd, lParam);
+                    break;
+                case NativeMethods.WM_DESTROY:
+                    if (this == TneApplication.MainForm)
+                        NativeMethods.PostQuitMessage(0);
+                    else
+                        result = NativeMethods.DefWindowProcW(hWnd, message, wParam, lParam);
+                    this.IsDesdroyed_ = true;
+                    break;
+                default:
+                    result = NativeMethods.DefWindowProcW(hWnd, message, wParam, lParam);
+                    break;
+            }
+
             return result;
         }
         static long WindowIndexSeed_ = 0;
@@ -295,6 +305,38 @@ namespace Tnelab.HtmlView
         IWebBrowser webBrowser_;
         void CreateWindow()
         {
+            winProcDelegate_ = this.WinProc;
+            var className = $"TneForm{WindowIndex_}";
+            NativeMethods.WNDCLASS wcex = new NativeMethods.WNDCLASS();
+            wcex.style = NativeMethods.CS_HREDRAW | NativeMethods.CS_VREDRAW | NativeMethods.CS_OWNDC;
+            wcex.lpfnWndProc = Marshal.GetFunctionPointerForDelegate(winProcDelegate_);
+            wcex.lpszClassName = className;
+            wcex.hInstance = System.Diagnostics.Process.GetCurrentProcess().Handle;
+
+            if (!string.IsNullOrEmpty(this.Icon))
+            {
+                var assembly = Assembly.GetEntryAssembly();
+                var names = assembly.GetManifestResourceNames();
+                var path = names.Single(it => it.ToLower().EndsWith(icon_.ToLower()));
+                using (var stream = assembly.GetManifestResourceStream(path))
+                {
+                    var datas = new byte[stream.Length];
+                    stream.Read(datas, 0, datas.Length);
+                    var ptr = Marshal.AllocHGlobal((int)stream.Length);
+                    Marshal.Copy(datas, 0, ptr, datas.Length);
+                    var hIcon = NativeMethods.CreateIconFromResourceEx(ptr, datas.Length, 1, 0x30000, 32, 32, NativeMethods.LR_DEFAULTCOLOR);
+                    wcex.hIcon = hIcon;
+                    Marshal.FreeHGlobal(ptr);
+                }
+            }
+            wcex.hCursor = NativeMethods.LoadCursorW(IntPtr.Zero, 32512);
+            var result = NativeMethods.RegisterClassW(ref wcex);
+            if (result == IntPtr.Zero)
+            {
+                throw new Exception($"注册窗口类失败,错误代码:{Marshal.GetLastWin32Error()}");
+            }
+
+
             if (this.StartPosition == StartPosition.CenterScreen || (this.StartPosition == StartPosition.CenterParent && this.Parent == null))
             {
                 var scrWidth = NativeMethods.GetSystemMetrics(NativeMethods.SM_CXSCREEN);
@@ -308,10 +350,29 @@ namespace Tnelab.HtmlView
                 this.X = (Parent.Width - this.Width) / 2 + this.Parent.X;
                 this.Y = (Parent.Height - this.Height) / 2 + this.Parent.Y;
             }
-            var result = NativeMethods.CreateWindowExW(NativeMethods.WS_EX_LAYERED, this.ClassName_, this.Title, NativeMethods.WS_POPUP, this.X, this.Y, this.Width, this.Height, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+            result = NativeMethods.CreateWindowExW(NativeMethods.WS_EX_LAYERED, this.ClassName_, this.Title, NativeMethods.WS_POPUP, this.X, this.Y, this.Width, this.Height, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
             if (result == IntPtr.Zero)
             {
                 throw new Exception($"创建窗口失败,错误代码:{Marshal.GetLastWin32Error()}");
+            }
+            if (webBrowser_ == null)
+            {
+                TneApplication.ReadOnlyVipFlag = true;
+                if (TneApplication.IsVip)
+                {
+                    webBrowser_ = new WebBrowserByVip(result);
+                }
+                else
+                {
+                    webBrowser_ = new WebBrowserByWke(result);
+                }
+                JsNativeMaper.This.AddBrowser(this.webBrowser_, () => this);
+                webBrowser_.TitleChanged += (sender, args) =>
+                {
+                    this.Title = args;
+                };
+
+                this.Url = this.Url;
             }
             this.Handle = result;
         }

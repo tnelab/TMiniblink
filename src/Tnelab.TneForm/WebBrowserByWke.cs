@@ -20,7 +20,7 @@ namespace Tnelab.HtmlView
                 JsQueryEventArgs args = new JsQueryEventArgs();
                 args.CustomMsg = jsToInt(es,jsArg(es, 0));
                 args.ES = es;
-                args.Request = jsToStringW(es, jsArg(es, 1));
+                args.Request = jsToString(es, jsArg(es, 1));
                 args.QueryId = idSeed_;
                 idSeed_++;
                 //var func = jsArg(es, 2);
@@ -49,12 +49,11 @@ namespace Tnelab.HtmlView
         public event EventHandler<string> TitleChanged ;
         public event EventHandler<JsQueryEventArgs> JsQuery;
         public IntPtr WebView { get => webView_; }
-        static bool isInited_ = false;
         public WebBrowserByWke(IntPtr parentHandle)
         {
-            if (!isInited_)
+            if (!wkeIsInitialize())
             {
-                wkeInit();
+                wkeInit();               
                 jsOnQueryFunction_ = jsOnQueryFunction;
                 wkeJsBindFunction("mbQuery", jsOnQueryFunction_, IntPtr.Zero, 3);
             }            
@@ -63,6 +62,8 @@ namespace Tnelab.HtmlView
             NativeMethods.GetWindowRect(parentHandle, out rect);
             //zmg
             webView_ = wkeCreateWebWindow(wkeWindowType.WKE_WINDOW_TYPE_TRANSPARENT, parentHandle, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
+            wkeSetHandle(webView_, parentHandle);
+            //wkeSetHandle(webView_,parentHandle);
             this.paintUpdatedCallback_ = this.OnPaintCallback;
             wkeOnPaintUpdated(webView_, this.paintUpdatedCallback_, IntPtr.Zero);
             this.titleChangedCallback_ = this.OnTitleChanged;
@@ -83,126 +84,150 @@ namespace Tnelab.HtmlView
             {
                 uiInvokeList.Add(action);
             }
-            NativeMethods.PostMessageW(this.parentHandle_,NativeMethods.WM_UI_INVOKE,0,0);
+            NativeMethods.SendMessageW(this.parentHandle_, NativeMethods.WM_UI_INVOKE, 0, 0);
         }
         public (int result,bool isHandle) ProcessWindowMessage(IntPtr hwnd, uint msg, uint wParam, uint lParam)
         {
             var isHandled = false;
             var result = 0;
-            if (webView_ != IntPtr.Zero)
+            if (webView_ == IntPtr.Zero)
             {
-                switch (msg)
-                {
-                    //case NativeMethods.WM_PAINT:
-                    //    break;
-                    case NativeMethods.WM_UI_INVOKE:
-                        lock (uiInvokeListLock_)
+                return (result, isHandled);
+            }
+            switch (msg)
+            {
+                //case NativeMethods.WM_PAINT:
+                //    break;
+                case NativeMethods.WM_UI_INVOKE:
+                    lock (uiInvokeListLock_)
+                    {
+                        foreach (var action in uiInvokeList)
                         {
-                            foreach(var action in uiInvokeList)
-                            {
-                                action();
-                            }
-                            uiInvokeList.Clear();
+                            action();
                         }
-                        break;
-                    case NativeMethods.WM_SIZE:
-                        {
-                            var newWidth = NativeMethods.LOWORD(lParam);
-                            var newHeight = NativeMethods.HIWORD(lParam);
+                        uiInvokeList.Clear();
+                    }
+                    isHandled = true;
+                    break;
+                case NativeMethods.WM_SIZE:
+                    {
+                        var newWidth = NativeMethods.LOWORD(lParam);
+                        var newHeight = NativeMethods.HIWORD(lParam);
 
-                            wkeResize(webView_,newWidth, newHeight);
-                            isHandled = true;
-                        }
-                        break;
-                    case NativeMethods.WM_MOUSEWHEEL:
-                        {
-                            OnMouseWheel(lParam, wParam);
-                            isHandled = true;
-                        }
-                        break;
-                    case NativeMethods.WM_LBUTTONDOWN:
-                    case NativeMethods.WM_LBUTTONUP:
-                    case NativeMethods.WM_MOUSEMOVE:
-                    case NativeMethods.WM_RBUTTONDOWN:
-                    case NativeMethods.WM_RBUTTONUP:
-                        {
-                            (result,isHandled) = OnMouseEvent(parentHandle_, msg, lParam, wParam);
-                        }
-                        break;
-                    case NativeMethods.WM_KEYDOWN:
-                        {
-                            uint virtualKeyCode = wParam;
-                            uint flags = 0;
-                            if ((NativeMethods.HIWORD(lParam) & NativeMethods.KF_REPEAT) == NativeMethods.KF_REPEAT)
-                                flags |= (uint)wkeKeyFlags.REPEAT;
-                            if ((NativeMethods.HIWORD(lParam) & NativeMethods.KF_EXTENDED) == NativeMethods.KF_EXTENDED)
-                                flags |= (uint)wkeKeyFlags.EXTENDED;
-                            wkeFireKeyDownEvent(webView_, virtualKeyCode, flags, false);
-                            isHandled = true;
-                        }
-                        break;
-                    case NativeMethods.WM_KEYUP:
-                        {
-                            uint virtualKeyCode = wParam;
-                            uint flags = 0;
-                            if ((NativeMethods.HIWORD(lParam) & NativeMethods.KF_REPEAT) == NativeMethods.KF_REPEAT)
-                                flags |= (uint)wkeKeyFlags.REPEAT;
-                            if ((NativeMethods.HIWORD(lParam) & NativeMethods.KF_EXTENDED) == NativeMethods.KF_EXTENDED)
-                                flags |= (uint)wkeKeyFlags.EXTENDED;
-                            isHandled = wkeFireKeyUpEvent(webView_, virtualKeyCode, flags, false);
-                        }
-                        break;
-                    case NativeMethods.WM_CHAR:
-                        {
-                            uint charCode = wParam;
-                            uint flags = 0;
-                            if ((NativeMethods.HIWORD(lParam) & NativeMethods.KF_REPEAT)==NativeMethods.KF_REPEAT)
-                                flags |= (uint)wkeKeyFlags.REPEAT;
-                            if ((NativeMethods.HIWORD(lParam) & NativeMethods.KF_EXTENDED) == NativeMethods.KF_EXTENDED)
-                                flags |= (uint)wkeKeyFlags.EXTENDED;
-                            isHandled=wkeFireKeyPressEvent(webView_, charCode, flags, false);                            
-                        }
-                        break;                    
-                    case NativeMethods.WM_SETCURSOR:
-                        isHandled = wkeFireWindowsMessage(webView_,hwnd, NativeMethods.WM_SETCURSOR, 0, 0, out var r);
-                        break;
-                    case NativeMethods.WM_SETFOCUS:
-                        wkeSetFocus(webView_);
+                        wkeResize(webView_, newWidth, newHeight);
                         isHandled = true;
-                        break;
-                    case NativeMethods.WM_KILLFOCUS:
-                        wkeKillFocus(webView_);
+                    }
+                    break;
+                case NativeMethods.WM_MOUSEWHEEL:
+                    {
+                        OnMouseWheel(lParam, wParam);
                         isHandled = true;
-                        break;
-                    case NativeMethods.WM_IME_STARTCOMPOSITION:
-                        {
-                            IntPtr rx;
-                            wkeFireWindowsMessage(webView_, this.parentHandle_, msg, wParam, lParam, out rx);
-                            result = rx.ToInt32();
-                            isHandled = true;
-                        }
-                        break;
-                }
+                    }
+                    break;
+                case NativeMethods.WM_LBUTTONDOWN:
+                case NativeMethods.WM_LBUTTONUP:
+                case NativeMethods.WM_MOUSEMOVE:
+                case NativeMethods.WM_RBUTTONDOWN:
+                case NativeMethods.WM_RBUTTONUP:
+                case NativeMethods.WM_MBUTTONDOWN:
+                case NativeMethods.WM_MBUTTONUP:
+                    {
+                        onCursorChange();
+
+                        //if (msg == NativeMethods.WM_LBUTTONDOWN || msg == NativeMethods.WM_MBUTTONDOWN || msg == NativeMethods.WM_RBUTTONDOWN)
+                        //{
+                        //    NativeMethods.SetFocus(hwnd);
+                        //    NativeMethods.SetCapture(hwnd);
+                        //}
+                        //else if (msg == NativeMethods.WM_LBUTTONUP || msg == NativeMethods.WM_MBUTTONUP || msg == NativeMethods.WM_RBUTTONUP)
+                        //{
+                        //    NativeMethods.ReleaseCapture();
+                        //}                        
+                        var (x, y, delta, flags) = GetMouseMsgInfo(lParam, wParam);
+                        wkeFireMouseEvent(webView_, msg, x, y, flags);
+                        isHandled = true;
+                    }
+                    break;
+                case NativeMethods.WM_KEYDOWN:
+                    {
+                        uint virtualKeyCode = wParam;
+                        uint flags = 0;
+                        if ((NativeMethods.HIWORD(lParam) & NativeMethods.KF_REPEAT) == NativeMethods.KF_REPEAT)
+                            flags |= (uint)wkeKeyFlags.REPEAT;
+                        if ((NativeMethods.HIWORD(lParam) & NativeMethods.KF_EXTENDED) == NativeMethods.KF_EXTENDED)
+                            flags |= (uint)wkeKeyFlags.EXTENDED;
+                        wkeFireKeyDownEvent(webView_, virtualKeyCode, flags, false);
+                        isHandled = true;
+                    }
+                    break;
+                case NativeMethods.WM_KEYUP:
+                    {
+                        uint virtualKeyCode = wParam;
+                        uint flags = 0;
+                        if ((NativeMethods.HIWORD(lParam) & NativeMethods.KF_REPEAT) == NativeMethods.KF_REPEAT)
+                            flags |= (uint)wkeKeyFlags.REPEAT;
+                        if ((NativeMethods.HIWORD(lParam) & NativeMethods.KF_EXTENDED) == NativeMethods.KF_EXTENDED)
+                            flags |= (uint)wkeKeyFlags.EXTENDED;
+                        wkeFireKeyUpEvent(webView_, virtualKeyCode, flags, false);
+                        isHandled = true;
+                    }
+                    break;
+                case NativeMethods.WM_CHAR:
+                    {
+                        uint charCode = wParam;
+                        uint flags = 0;
+                        if ((NativeMethods.HIWORD(lParam) & NativeMethods.KF_REPEAT) == NativeMethods.KF_REPEAT)
+                            flags |= (uint)wkeKeyFlags.REPEAT;
+                        if ((NativeMethods.HIWORD(lParam) & NativeMethods.KF_EXTENDED) == NativeMethods.KF_EXTENDED)
+                            flags |= (uint)wkeKeyFlags.EXTENDED;
+                        wkeFireKeyPressEvent(webView_, charCode, flags, false);
+                        isHandled = true;
+                    }
+                    break;
+                case NativeMethods.WM_SETCURSOR:
+                    //isHandled = wkeFireWindowsMessage(webView_, hwnd, NativeMethods.WM_SETCURSOR, 0, 0, out var r);
+                    //isHandled = true;
+                    setCursorInfoTypeByCache(hwnd);
+                    isHandled = true;
+                    break;
+                case NativeMethods.WM_SETFOCUS:
+                    wkeSetFocus(WebView);
+                    isHandled = true;
+                    break;
+                case NativeMethods.WM_KILLFOCUS:
+                    wkeKillFocus(WebView);
+                    isHandled = true;
+                    break;
+                case NativeMethods.WM_IME_STARTCOMPOSITION:
+                    {
+                        IntPtr rx;
+                        wkeFireWindowsMessage(webView_, this.parentHandle_, msg, wParam, lParam, out rx);
+                        result = rx.ToInt32();
+                        isHandled = true;
+                    }
+                    break;
             }
             return (result,isHandled);
         }
         public void ResponseJsQuery(IntPtr webView,Int64 queryId,int customMsg,string response)
         {
+            response = Convert.ToBase64String(Encoding.UTF8.GetBytes(response));
             var args = queryMap_[queryId];
             queryMap_.Remove(queryId);
+            var tnelab = jsGetGlobal(args.ES, "Tnelab");
             var func = jsArg(args.ES, 2);
-            jsCallGlobal(args.ES, func, new[] { jsInt(customMsg), jsStringW(args.ES, response) }, 2);
+            jsCall(args.ES, func, tnelab, new[] { jsInt(customMsg), jsStringW(args.ES, response) }, 2);
         }
-        /// <summary>
-        /// 此方法需要在非主线程执行
-        /// </summary>
-        /// <param name="script"></param>
-        /// <returns></returns>
-        public string RunJs(string script)
+        public Task<(IntPtr view, IntPtr es, string value)> RunJs(string script, Action<IntPtr, IntPtr, long> hook=null)
         {
+            TaskCompletionSource<(IntPtr view, IntPtr es, string value)> tcs = new TaskCompletionSource<(IntPtr view, IntPtr es, string value)>();
             var jv = MiniBlink.NativeMethods.wkeRunJS(WebView, script);
             var es = MiniBlink.NativeMethods.wkeGlobalExec(WebView);
-            return MiniBlink.NativeMethods.jsToStringW(es, jv);
+            var val = MiniBlink.NativeMethods.jsToString(es, jv);
+            if (hook != null)
+                hook(this.WebView, es, jv);
+            tcs.SetResult((this.WebView, es, val));
+            return tcs.Task;
         }
         IntPtr webView_=IntPtr.Zero;
         IntPtr parentHandle_ = IntPtr.Zero;
@@ -216,12 +241,6 @@ namespace Tnelab.HtmlView
             var (x, y, delta, flags) = GetMouseMsgInfo(lParam, wParam);
             wkeFireMouseWheelEvent(webView_,x, y, delta, flags);
         }
-        (int result,bool isHandled) OnMouseEvent(IntPtr handle, uint msg, uint lParam, uint wParam)
-        {
-            var (x, y, delta, flags) = GetMouseMsgInfo(lParam, wParam);
-            wkeFireMouseEvent(webView_,msg, x, y, flags);
-            return (0, true);
-        }
         (int, int, int, uint) GetMouseMsgInfo(uint lParam, uint wParam)
         {
             var x = NativeMethods.LOWORD(lParam);
@@ -229,6 +248,79 @@ namespace Tnelab.HtmlView
             var delta = NativeMethods.HIWORD(wParam);
             var flags = NativeMethods.LOWORD(wParam);
             return (x, y, delta, flags);
+        }
+        WkeCursorInfoType cursorInfoType_;
+        void onCursorChange()
+        {
+            cursorInfoType_ = (WkeCursorInfoType)wkeGetCursorInfoType(WebView);
+        }
+
+        bool setCursorInfoTypeByCache(IntPtr hWnd)
+        {
+            NativeMethods.RECT rc;
+            NativeMethods.GetClientRect(hWnd, out rc);
+            NativeMethods.POINT pt=new NativeMethods.POINT();
+            NativeMethods.GetCursorPos(ref pt);
+            NativeMethods.ScreenToClient(hWnd, ref pt);
+            if (!NativeMethods.PtInRect(ref rc, pt))
+                return false;
+
+            IntPtr hCur = IntPtr.Zero;
+            switch (cursorInfoType_)
+            {
+                case WkeCursorInfoType.CursorInfoPointer:
+                    hCur = NativeMethods.LoadCursorW(IntPtr.Zero, 32512);//
+                    break;
+                case WkeCursorInfoType.CursorInfoIBeam:
+                    hCur = NativeMethods.LoadCursorW(IntPtr.Zero, 32513);
+                    break;
+                case WkeCursorInfoType.CursorInfoHand:
+                    hCur = NativeMethods.LoadCursorW(IntPtr.Zero, 32649);
+                    break;
+                case WkeCursorInfoType.CursorInfoWait:
+                    hCur = NativeMethods.LoadCursorW(IntPtr.Zero, 32514);
+                    break;
+                case WkeCursorInfoType.CursorInfoHelp:
+                    hCur = NativeMethods.LoadCursorW(IntPtr.Zero, 32651);
+                    break;
+                case WkeCursorInfoType.CursorInfoEastResize:
+                    hCur = NativeMethods.LoadCursorW(IntPtr.Zero, 32644);
+                    break;
+                case WkeCursorInfoType.CursorInfoNorthResize:
+                    hCur = NativeMethods.LoadCursorW(IntPtr.Zero, 32645);
+                    break;
+                case WkeCursorInfoType.CursorInfoSouthWestResize:
+                case WkeCursorInfoType.CursorInfoNorthEastResize:
+                    hCur = NativeMethods.LoadCursorW(IntPtr.Zero, 32643);
+                    break;
+                case WkeCursorInfoType.CursorInfoSouthResize:
+                case WkeCursorInfoType.CursorInfoNorthSouthResize:
+                    hCur = NativeMethods.LoadCursorW(IntPtr.Zero, 32645);
+                    break;
+                case WkeCursorInfoType.CursorInfoNorthWestResize:
+                case WkeCursorInfoType.CursorInfoSouthEastResize:
+                    hCur = NativeMethods.LoadCursorW(IntPtr.Zero, 32642);
+                    break;
+                case WkeCursorInfoType.CursorInfoWestResize:
+                case WkeCursorInfoType.CursorInfoEastWestResize:
+                    hCur = NativeMethods.LoadCursorW(IntPtr.Zero, 32644);
+                    break;
+                case WkeCursorInfoType.CursorInfoNorthEastSouthWestResize:
+                case WkeCursorInfoType.CursorInfoNorthWestSouthEastResize:
+                    hCur = NativeMethods.LoadCursorW(IntPtr.Zero, 32646);
+                    break;
+                default:
+                    hCur = NativeMethods.LoadCursorW(IntPtr.Zero, 32512);
+                    break;
+            }
+
+            if (hCur!=IntPtr.Zero)
+            {
+                NativeMethods.SetCursor(hCur);
+                return true;
+            }
+
+            return false;
         }
         void OnPaintCallback(IntPtr webView, IntPtr param, IntPtr hdc, int x, int y, int cx, int cy)
         {
@@ -311,23 +403,26 @@ namespace Tnelab.HtmlView
         Dictionary<long, JsQueryEventArgs> queryMap_ = new Dictionary<long, JsQueryEventArgs>();
         void OnJsQuery(object sender,JsQueryEventArgs args)
         {
+            args.Request = Encoding.UTF8.GetString(Convert.FromBase64String(args.Request));
             if (this.JsQuery != null)
             {
-                Task.Factory.StartNew(() =>
-                {
-                    lock (jsqueryLock_)
-                    {
-                        queryMap_.Add(args.QueryId, args);
-                        JsQuery(this, args);
-                    }
-                });                
+                //Task.Factory.StartNew(() =>
+                //{
+                //    lock (jsqueryLock_)
+                //    {
+                //        queryMap_.Add(args.QueryId, args);
+                //        JsQuery(this, args);
+                //    }
+                //});           
+                queryMap_.Add(args.QueryId, args);
+                JsQuery(this, args);
             }            
         }
         void OnConsole(IntPtr webView, IntPtr param, wkeConsoleLevel level, IntPtr message, IntPtr sourceName, uint sourceLine, IntPtr stackTrace)
         {
-            var msg = Marshal.PtrToStringUni(wkeToStringW(message));
-            var srName = Marshal.PtrToStringUni(wkeToStringW(sourceName));
-            var stckTrace = Marshal.PtrToStringUni(wkeToStringW(stackTrace));
+            var msg = wkeToString(message);
+            var srName = wkeToString(sourceName);
+            var stckTrace = wkeToString(stackTrace);
         }
     }
 }

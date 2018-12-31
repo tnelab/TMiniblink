@@ -29,6 +29,7 @@ namespace Tnelab.HtmlView
     using LPCWSTR = String;
     using HICON = IntPtr;
     using HBRUSH = IntPtr;
+    using PBYTE = IntPtr;
 
     [SuppressUnmanagedCodeSecurity]
     static partial class NativeMethods
@@ -288,6 +289,9 @@ namespace Tnelab.HtmlView
         public const int WM_NCHITTEST = 0x0084;    //测试消息
         public const int WM_PAINT = 0x000F;
 
+        public const int WM_MBUTTONDOWN = 0x0207;
+        public const int WM_MBUTTONUP = 0x0208;
+
         public const int CW_USEDEFAULT = unchecked((int)0x80000000);
 
         public const int SC_MOVE = 0xF012;
@@ -305,6 +309,26 @@ namespace Tnelab.HtmlView
         public const int KF_ALTDOWN = 0x2000;
         public const int KF_REPEAT = 0x4000;
         public const int KF_UP = 0x8000;
+
+        public const int WM_GETICON = 0x007F;
+        public const int WM_SETICON = 0x0080;
+        public const int ICON_SMALL=          0;
+        public const int ICON_BIG=            1;
+
+
+        public const int LR_DEFAULTCOLOR=     0x00000000;
+        public const int LR_MONOCHROME=       0x00000001;
+        public const int LR_COLOR=            0x00000002;
+        public const int LR_COPYRETURNORG=    0x00000004;
+        public const int LR_COPYDELETEORG=    0x00000008;
+        public const int LR_LOADFROMFILE=     0x00000010;
+        public const int LR_LOADTRANSPARENT=  0x00000020;
+        public const int LR_DEFAULTSIZE=      0x00000040;
+        public const int LR_VGACOLOR=         0x00000080;
+        public const int LR_LOADMAP3DCOLORS=  0x00001000;
+        public const int LR_CREATEDIBSECTION= 0x00002000;
+        public const int LR_COPYFROMRESOURCE= 0x00004000;
+        public const int LR_SHARED=           0x00008000;
 
 
 
@@ -372,7 +396,7 @@ namespace Tnelab.HtmlView
         [DllImport("user32.dll", CallingConvention = CallingConvention.Winapi)]
         public static extern int ReleaseCapture();
         [DllImport("user32.dll", CallingConvention = CallingConvention.Winapi)]
-        public static extern int SendMessage(IntPtr hWnd, uint Msg, uint wParam, uint lParam);
+        public static extern int SendMessageW(IntPtr hWnd, uint Msg, uint wParam, uint lParam);
         [DllImport("user32.dll", CallingConvention = CallingConvention.Winapi)]
         public static extern BOOL UpdateLayeredWindow(HWND hWnd, HDC hdcDst, POINT pptDst, SIZE psize, HDC hdcSrc, POINT pptSrc, COLORREF crKey, BLENDFUNCTION pblend, DWORD dwFlags);
         [DllImport("user32.dll", CallingConvention = CallingConvention.Winapi)]
@@ -398,6 +422,28 @@ namespace Tnelab.HtmlView
         public static extern HMODULE LoadLibraryA(LPCSTR lpLibFileName);
         [DllImport("user32.dll", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
         public static extern BOOL PostMessageW(HWND hWnd,UINT Msg,WPARAM wParam,LPARAM lParam);
+        [DllImport("user32.dll", CallingConvention = CallingConvention.Winapi,SetLastError =true)]
+        public static extern HICON CreateIconFromResourceEx(
+          PBYTE presbits,
+          DWORD dwResSize,
+          int fIcon,
+          DWORD dwVer,
+          int cxDesired,
+          int cyDesired,
+          UINT Flags
+        );
+        [DllImport("user32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        public static extern HWND SetFocus(HWND hWnd);
+        [DllImport("user32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        public static extern HWND SetCapture(HWND hwnd);
+        [DllImport("user32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        public static extern BOOL GetCursorPos(ref POINT lpPoint);
+        [DllImport("user32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        public static extern BOOL ScreenToClient(HWND hWnd, ref POINT lpPoint);
+        [DllImport("user32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        public static extern BOOL PtInRect(ref RECT lprc,POINT pt);
+        [DllImport("user32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true,CharSet =CharSet.Unicode)]
+        public static extern HCURSOR LoadCursorW(HINSTANCE hInstance,uint lpCursorName);
         public static ushort LOWORD(uint value)
         {
             return (ushort)(value & 0xFFFF);

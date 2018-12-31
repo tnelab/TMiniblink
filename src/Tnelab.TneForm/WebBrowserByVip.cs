@@ -65,7 +65,7 @@ namespace Tnelab.HtmlView
             {
                 uiInvokeList.Add(action);
             }
-            NativeMethods.PostMessageW(this.parentHandle_,NativeMethods.WM_UI_INVOKE,0,0);
+            NativeMethods.SendMessageW(this.parentHandle_, NativeMethods.WM_UI_INVOKE, 0, 0);
         }
         public (int result,bool isHandle) ProcessWindowMessage(IntPtr hwnd, uint msg, uint wParam, uint lParam)
         {
@@ -170,13 +170,22 @@ namespace Tnelab.HtmlView
         }
         public void ResponseJsQuery(IntPtr webView,Int64 queryId,int customMsg,string response)
         {
+            response = Convert.ToBase64String(Encoding.UTF8.GetBytes(response));
             mbResponseQuery(webView, queryId, customMsg, response);
         }
-        public string RunJs(string script)
+        public Task<(IntPtr view, IntPtr es, string value)> RunJs(string script, Action<IntPtr, IntPtr, long> hook=null)
         {
-            var jv=MiniBlink.NativeMethods.wkeRunJS(WebView, script);
-            var es = MiniBlink.NativeMethods.wkeGlobalExec(WebView);
-            return MiniBlink.NativeMethods.jsToStringW(es, jv);
+            TaskCompletionSource<(IntPtr view, IntPtr es, string value)> tcs = new TaskCompletionSource<(IntPtr view, IntPtr es, string value)>();
+            UIInvoke(() => {
+                var frame = mbWebFrameGetMainFrame(this.WebView);
+                mbRunJs(this.WebView, frame, script, true, (view, p, es, jv) => {
+                    var val = mbJsToString(es, jv);
+                    if (hook != null)
+                        hook(view, es, jv);
+                    tcs.SetResult((view, es, val));
+                }, IntPtr.Zero, IntPtr.Zero);
+            });
+            return tcs.Task;
         }
         IntPtr webView_=IntPtr.Zero;
         IntPtr parentHandle_ = IntPtr.Zero;
@@ -284,6 +293,7 @@ namespace Tnelab.HtmlView
         object jsqueryLock_ = new object();
         void OnJsQuery(IntPtr webView, IntPtr param, IntPtr es, Int64 queryId, int customMsg, string request)
         {
+            request = Encoding.UTF8.GetString(Convert.FromBase64String(request));
             if (this.JsQuery != null)
             {
                 var args = new JsQueryEventArgs();
@@ -299,7 +309,7 @@ namespace Tnelab.HtmlView
                     {
                         JsQuery(this, args);
                     }
-                });                
+                });
             }            
         }
         void OnConsole(IntPtr webView, IntPtr param, mbConsoleLevel level, string message, string sourceName, uint sourceLine, string stackTrace)

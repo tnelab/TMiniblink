@@ -38,13 +38,15 @@
         return result;
     }
     //js通讯回调
-    function OnResponse(msgId: number, response: string) {
+    export function OnResponse(msgId: number, response: string) {
+        response = window.atob(response);
         return response;
     }
     //js通道异步封装
     async function TneQueryAsync(msgId: number, request: string): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             //调用原始callback的js通讯接口
+            request=window.btoa(request);
             mbQuery(msgId, request, (id, response) => {
                 resolve(OnResponse(id, response));
             });
@@ -297,8 +299,9 @@
         }
         //调用本机对象
         static async MapNativeObjectAsync(mapInfo: any): Promise<any> {
+            let resultObject: string;
             try {
-                let resultObject = await NativeMapAsync(JSON.stringify(mapInfo));
+                resultObject = await NativeMapAsync(JSON.stringify(mapInfo));
                 if (resultObject === "OK")
                     return;
                 let result = JSON.parse(resultObject) as MapResult;
@@ -306,7 +309,6 @@
                     throw result.Data.Value;
                 if (mapInfo.Action != MapAction.Create && result.Data.DataType === MapDataType.NativeObjectId) {
                     let nativeTypeName = result.Data.Value.Path;
-                    alert(nativeTypeName);
                     let jsMapInfo = JsMapInfo.GetMapInfoByNativeTypePath(nativeTypeName);
                     let r = await new jsMapInfo.JsType.prototype.constructor(result.Data.Value).Ready();
                     //let r = eval("await new " + jsTypeName + "(result.Data.Value).Ready()");
@@ -315,7 +317,9 @@
                 return result.Data.Value;
             }
             catch (error) {
-                alert(error);
+                console.error(error);
+                console.error(resultObject);
+                throw error;
             }
         }
         //动态构造静态调用，根据规则动态生成js代码
@@ -484,21 +488,26 @@
         public TneMapNativeObjectId: number;
         private TneMapGcObject_: object;
         private args_: any;
-        public constructor(...arg: any[]) {
-            this.args_ = arguments;
+        public constructor(args?: IArguments) {
+            if (args === undefined) {
+                this.args_ = new Array();
+            }
+            else {
+                this.args_ = args;
+            }
         }
         public TneMapGenericInfo: string = "";
-        public async Ready() {//请务必使用let t=await new obj().ready()来构造本机类型对象  
+        public async Ready() {//请务必使用let t=await new obj().ready()来构造本机类型对象              
+            let mapInfo = JsMapInfo.GetMapInfoByJsObject(this);
+            if (!mapInfo.JsType.prototype.TneMap.IsBuilded) {
+                await NativeObject.Build(mapInfo);
+                mapInfo.JsType.prototype.TneMap.IsBuilded = true;
+            }
             if (this.args_.length == 1 && (this.args_[0] instanceof NativeObjectInfo)) {
                 let noi = this.args_[0] as NativeObjectInfo;
                 this.TneMapNativeObjectId = noi.Id
                 this.TneMapGenericInfo = noi.GenericInfo;
                 return this;
-            }
-            let mapInfo = JsMapInfo.GetMapInfoByJsObject(this);
-            if (!mapInfo.JsType.prototype.TneMap.IsBuilded) {
-                await NativeObject.Build(mapInfo);
-                mapInfo.JsType.prototype.TneMap.IsBuilded = true;
             }
             let realArgsIndex = 0;
             let genericInfo: string = null;
@@ -565,15 +574,15 @@
     }
     /////////////////////////////////////////////////////////////////////////////////ThisForm
     //自动定义当前窗口的本机id，可以用该ID随时构造出当前窗口本机对象的js同步对象    
-    export var ThisForm: TneForm;
+    export let ThisForm: TneForm;
     let dom_ready_ = async function () {
         document.removeEventListener("DOMContentLoaded", dom_ready_, false);
         let hashCode = await TneQueryAsync(TneQueryId.GetThisFormHashCode, "");
         let no = new NativeObjectInfo();
         no.Id = hashCode;
         no.GenericInfo = "";
-        //ThisFormId = no;
-        ThisForm = await new TneForm(no).Ready();
+        let proxy = TneForm as any;
+        ThisForm = await new proxy(no).Ready();
     };
     document.addEventListener("DOMContentLoaded", dom_ready_, true);
     /////////////////////////////////////////////////////////////////////////////////JSON
