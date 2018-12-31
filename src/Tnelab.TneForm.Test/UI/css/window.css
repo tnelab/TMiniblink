@@ -1,15 +1,15 @@
-﻿html, body {
+﻿* {
     margin: 0;
-    padding: 0;
-    cursor: default;
+    padding: 0
 }
 html {
     background: #ffffff;
     background: rgba(255, 255, 255, 0.7);
 }
 body {
-    /*background: #ff0000;
-    background: rgba(255, 0, 0, 0.2);*/
+    position: absolute;
+    height:calc(100%);
+    width:100%;
 }
 .caption_bar {
     color: white;
@@ -35,6 +35,9 @@ body {
     height: 22px;
     float: left;
 }
-.window_client{
-
+.window_client {
+    padding: 6px;
+    background: #ff0000;
+    background: rgba(255,0,0,0.4);
+    height: calc(100% - 42px);
 }

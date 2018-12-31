@@ -20,8 +20,8 @@ namespace Tnelab.HtmlView.Test
             //f1.Url = "https://www.html5tricks.com/demo/html5-canvas-particle-effect/index.html";
             //f1.Url = "http://www.sina.com.cn";
             //f1.Url = "http://html5test.com/";
-            f1.MinWidth = 800;
-            f1.MinHeight = 600;
+            f1.MinWidth = 100;
+            f1.MinHeight = 100;
             //f1.SizeAble = false;
             f1.Show();
             //var f2 = new TneForm();

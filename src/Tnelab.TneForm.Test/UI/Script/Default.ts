@@ -2,4 +2,5 @@
 async function InvokeTest() {
     var simple = await new BLL.SimpleTestService().Ready();
     alert("hi");
+    
 }
