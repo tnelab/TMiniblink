@@ -39,14 +39,14 @@
     }
     //js通讯回调
     export function OnResponse(msgId: number, response: string) {
-        response = window.atob(response);
+        response = unescape(response);
         return response;
     }
     //js通道异步封装
     async function TneQueryAsync(msgId: number, request: string): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             //调用原始callback的js通讯接口
-            request=window.btoa(request);
+            request = escape(request);
             mbQuery(msgId, request, (id, response) => {
                 resolve(OnResponse(id, response));
             });
@@ -577,7 +577,7 @@
     export let ThisForm: TneForm;
     let dom_ready_ = async function () {
         document.removeEventListener("DOMContentLoaded", dom_ready_, false);
-        let hashCode = await TneQueryAsync(TneQueryId.GetThisFormHashCode, "");
+        let hashCode = await TneQueryAsync(TneQueryId.GetThisFormHashCode, "GetThisFormHashCode");
         let no = new NativeObjectInfo();
         no.Id = hashCode;
         no.GenericInfo = "";

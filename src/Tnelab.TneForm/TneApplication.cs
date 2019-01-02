@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,16 +9,56 @@ namespace Tnelab.HtmlView
     {
         public static bool IsVip { get; private set; } = false;
         public static TneForm MainForm { get; private set; }
-        public static void Run(TneForm form)
-        {            
-            MainForm = form;
+        static List<Action> uiInvokeList_ = new List<Action>();
+        static object uiInvokeListLock_ = new object();
+        static object uiTcsLock_ = new object();
+        public static bool IsMainTask()
+        {
+            return mainTaskId_ == Task.CurrentId;
+        }
+        public static void UIInvoke(Action action){
+            if (IsMainTask())
+            {
+                action();
+                return;
+            }
+            lock (uiTcsLock_)
+            {
+                TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
+                lock (uiInvokeListLock_)
+                {
+                    uiInvokeList_.Add(() =>
+                    {
+                        action();
+                        tcs.SetResult(true);
+                    });
+                }
+                tcs.Task.Wait();
+            }
+        }
+        static int? mainTaskId_ = null;
+        static void WatchMsg()
+        {
             NativeMethods.MSG msg = new NativeMethods.MSG();
             while (NativeMethods.GetMessage(ref msg, IntPtr.Zero, 0, 0))
             {
+                lock (uiInvokeListLock_)
+                {
+                    foreach (var action in uiInvokeList_)
+                    {
+                        action();
+                    }
+                    uiInvokeList_.Clear();
+                }
                 NativeMethods.TranslateMessage(ref msg);
 
                 NativeMethods.DispatchMessage(ref msg);
             }
+        }
+        public static void Run(TneForm form)
+        {            
+            MainForm = form;
+            WatchMsg();
         }
         public static void SetToVip()
         {

@@ -226,6 +226,7 @@ namespace Tnelab.HtmlView
         public const int WS_EX_LAYERED=           0x00080000;
         public const int WS_EX_TRANSPARENT = 0x20;
         public const int WS_EX_APPWINDOW = 0x00040000;
+        public const int WS_EX_TOOLWINDOW = 0x00000080;
 
 
         /*

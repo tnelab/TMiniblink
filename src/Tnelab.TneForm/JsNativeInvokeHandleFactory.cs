@@ -457,9 +457,7 @@ namespace Tnelab.HtmlView
                 args[i] = NativeToJsValue(objs[i + 3]);
             }
             var toRun = $"return Tnelab.OnCallJs(({script})({string.Join(",", args)}))";
-            var task= browser.RunJs(toRun);
-            task.Wait();
-            var result = task.Result.value;
+            var result = browser.RunJs(toRun);
             var robj = JsonConvert.DeserializeObject<OnCallJsInfo>(result);
             if (!robj.Status)
                 throw new Exception(robj.Data.ToString());
@@ -476,9 +474,7 @@ namespace Tnelab.HtmlView
                 args[i] = NativeToJsValue(objs[i + 3]);
             }
             var toRun = $"return Tnelab.OnCallJs(({script})({string.Join(",", args)}))";
-            var task= browser.RunJs(toRun);
-            task.Wait();
-            var result = task.Result.value;
+            var result = browser.RunJs(toRun);
             var robj = JsonConvert.DeserializeObject<OnCallJsInfo>(result);
             if (!robj.Status)
                 throw new Exception(robj.Data.ToString());

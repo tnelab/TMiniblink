@@ -51,7 +51,7 @@ var Tnelab;
     Tnelab.OnCallJs = OnCallJs;
     //js通讯回调
     function OnResponse(msgId, response) {
-        response = window.atob(response);
+        response = unescape(response);
         return response;
     }
     Tnelab.OnResponse = OnResponse;
@@ -59,7 +59,7 @@ var Tnelab;
     async function TneQueryAsync(msgId, request) {
         return new Promise((resolve, reject) => {
             //调用原始callback的js通讯接口
-            request = window.btoa(request);
+            request = escape(request);
             mbQuery(msgId, request, (id, response) => {
                 resolve(OnResponse(id, response));
             });
@@ -589,7 +589,7 @@ var Tnelab;
     Tnelab.NativeObject = NativeObject;
     let dom_ready_ = async function () {
         document.removeEventListener("DOMContentLoaded", dom_ready_, false);
-        let hashCode = await TneQueryAsync(TneQueryId.GetThisFormHashCode, "");
+        let hashCode = await TneQueryAsync(TneQueryId.GetThisFormHashCode, "GetThisFormHashCode");
         let no = new NativeObjectInfo();
         no.Id = hashCode;
         no.GenericInfo = "";
@@ -599,11 +599,22 @@ var Tnelab;
     document.addEventListener("DOMContentLoaded", dom_ready_, true);
     /////////////////////////////////////////////////////////////////////////////////JSON
 })(Tnelab || (Tnelab = {}));
-//此代码由机器生成，请不要手动修改
-///<reference path="./TneMap.ts"/>
 var Tnelab;
 (function (Tnelab) {
-    let TneForm = class TneForm extends Tnelab.NativeObject {
+    class TneFormBase extends Tnelab.NativeObject {
+        GetHtmlWindow() {
+            alert("HI");
+            return window;
+        }
+    }
+    Tnelab.TneFormBase = TneFormBase;
+})(Tnelab || (Tnelab = {}));
+//此代码由机器生成，请不要手动修改
+///<reference path="./TneMap.ts"/>
+///<reference path="./TneFormBase.ts"/>
+var Tnelab;
+(function (Tnelab) {
+    let TneForm = class TneForm extends Tnelab.TneFormBase {
         constructor() { super(arguments); }
         get Handle() { return undefined; }
         get Title() { return undefined; }
@@ -617,6 +628,8 @@ var Tnelab;
         get Width() { return undefined; }
         set Height(value) { }
         get Height() { return undefined; }
+        set ShowInTaskBar(value) { }
+        get ShowInTaskBar() { return undefined; }
         set MinWidth(value) { }
         get MinWidth() { return undefined; }
         set MinHeight(value) { }
@@ -631,6 +644,7 @@ var Tnelab;
         get Parent() { return undefined; }
         set Icon(value) { }
         get Icon() { return undefined; }
+        RunFunc(func) { return undefined; }
         Close() { }
         ShowDialog() { }
         Show() { }
@@ -658,6 +672,9 @@ var Tnelab;
         Tnelab.InvokeInfo(undefined, "System.Int32")
     ], TneForm.prototype, "Height", null);
     __decorate([
+        Tnelab.InvokeInfo(undefined, "System.Boolean")
+    ], TneForm.prototype, "ShowInTaskBar", null);
+    __decorate([
         Tnelab.InvokeInfo(undefined, "System.Int32")
     ], TneForm.prototype, "MinWidth", null);
     __decorate([
@@ -678,6 +695,9 @@ var Tnelab;
     __decorate([
         Tnelab.InvokeInfo(undefined, "System.String")
     ], TneForm.prototype, "Icon", null);
+    __decorate([
+        Tnelab.InvokeInfo("RunFunc", "System.Func<System.String>")
+    ], TneForm.prototype, "RunFunc", null);
     __decorate([
         Tnelab.InvokeInfo("Close")
     ], TneForm.prototype, "Close", null);

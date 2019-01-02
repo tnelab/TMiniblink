@@ -8,7 +8,7 @@ namespace Tnelab.TneAppMapTool
 {
     static class JsNativeMapBuilder
     {
-        public static string Build(CodeModel codeModel,string theNamespace,string theTneAppPath)
+        public static string Build(CodeModel codeModel,string theNamespace,string theBase,List<string> theImportList)
         {
             Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
             //var project = DTEHelper.GetProject(theDTE, this.ProjectName);
@@ -16,7 +16,10 @@ namespace Tnelab.TneAppMapTool
             //var assemblyName = pro.Value.ToString();
             StringBuilder strBuilder = new StringBuilder();
             strBuilder.AppendLine("//此代码由机器生成，请不要手动修改");
-            strBuilder.AppendLine($"///<reference path=\"{theTneAppPath}\"/>");
+            foreach (var import in theImportList)
+            {
+                strBuilder.AppendLine($"///<reference path=\"{import}\"/>");
+            }
             strBuilder.Append("namespace ").Append(theNamespace).AppendLine("{");
             var constructorInfoList = new List<string>();
             codeModel.ProcessConstructor((funcInfo) => {
@@ -31,7 +34,7 @@ namespace Tnelab.TneAppMapTool
             });
             strBuilder.AppendLine(String.Join("\r\n", constructorInfoList.Select(it => $"\t{it}").ToArray()));
             strBuilder.AppendLine($"\t@Tnelab.ToMap(\"{theNamespace}.{codeModel.ClassName}\",\"{codeModel.NamespaceName}.{codeModel.ClassName}\")");
-            strBuilder.AppendLine($"\texport class {codeModel.ClassName} extends Tnelab.NativeObject {{");
+            strBuilder.AppendLine($"\texport class {codeModel.ClassName} extends {theBase} {{");
             codeModel.ProcessProperty((propInfo) => {
                 if (propInfo.HasSet)
                 {                    

@@ -31,6 +31,7 @@
   <ItemGroup>
     <None Remove="TneApp.js" />
     <None Remove="TneForm.cs.ts" />
+    <None Remove="TneFormBase.ts" />
     <None Remove="TneMap.ts" />
   </ItemGroup>
   <ItemGroup>
@@ -39,6 +40,7 @@
 
   <ItemGroup>
     <TypeScriptCompile Include="TneForm.cs.ts" />
+    <TypeScriptCompile Include="TneFormBase.ts" />
     <TypeScriptCompile Include="TneMap.ts" />
   </ItemGroup>
 

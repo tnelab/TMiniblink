@@ -53,15 +53,14 @@ namespace Tnelab.HtmlView
                 this.DestroyNativeObject(id,true);
                 Marshal.FreeHGlobal(gcPtr);
             };
-            var task=this.WebBrowser.RunJs("return undefined",(v,e,tv)=> {
-                var tes = e;
+            this.WebBrowser.JsExecStateInvoke((es)=> {
+                var tes = es;
                 var gcValue = MiniBlink.NativeMethods.jsObject(tes, gcPtr);
                 var idValue = MiniBlink.NativeMethods.jsInt((int)id);
                 var tnelabValue = MiniBlink.NativeMethods.jsGetGlobal(tes, "Tnelab");
                 var onSetGCValue = MiniBlink.NativeMethods.jsGet(tes, tnelabValue, "OnSetGC");
                 MiniBlink.NativeMethods.jsCall(tes, onSetGCValue, tnelabValue, new long[] { idValue, gcValue }, 2);
             });
-            task.Wait();
             info.JsGC = jsGc;
             NativeObjectInfoDic.Add(id, info);
             return id;

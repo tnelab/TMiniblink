@@ -24,7 +24,7 @@ namespace Tnelab.HtmlView
                 args.QueryId = idSeed_;
                 idSeed_++;
                 //var func = jsArg(es, 2);
-                jsQuery(null, args);
+                jsQuery(jsGetWebView(es), args);
             }
             return jsUndefined();
         }
@@ -76,15 +76,9 @@ namespace Tnelab.HtmlView
             this.consoleCallback_ = this.OnConsole;
             wkeOnConsole(webView_, this.consoleCallback_, IntPtr.Zero);
         }
-        List<Action> uiInvokeList = new List<Action>();
-        object uiInvokeListLock_ = new object();
         public void UIInvoke(Action action)
         {
-            lock (uiInvokeListLock_)
-            {
-                uiInvokeList.Add(action);
-            }
-            NativeMethods.SendMessageW(this.parentHandle_, NativeMethods.WM_UI_INVOKE, 0, 0);
+            TneApplication.UIInvoke(action);
         }
         public (int result,bool isHandle) ProcessWindowMessage(IntPtr hwnd, uint msg, uint wParam, uint lParam)
         {
@@ -96,19 +90,6 @@ namespace Tnelab.HtmlView
             }
             switch (msg)
             {
-                //case NativeMethods.WM_PAINT:
-                //    break;
-                case NativeMethods.WM_UI_INVOKE:
-                    lock (uiInvokeListLock_)
-                    {
-                        foreach (var action in uiInvokeList)
-                        {
-                            action();
-                        }
-                        uiInvokeList.Clear();
-                    }
-                    isHandled = true;
-                    break;
                 case NativeMethods.WM_SIZE:
                     {
                         var newWidth = NativeMethods.LOWORD(lParam);
@@ -211,23 +192,24 @@ namespace Tnelab.HtmlView
         }
         public void ResponseJsQuery(IntPtr webView,Int64 queryId,int customMsg,string response)
         {
-            response = Convert.ToBase64String(Encoding.UTF8.GetBytes(response));
+            response = TneEncoder.Escape(response);
             var args = queryMap_[queryId];
             queryMap_.Remove(queryId);
             var tnelab = jsGetGlobal(args.ES, "Tnelab");
             var func = jsArg(args.ES, 2);
             jsCall(args.ES, func, tnelab, new[] { jsInt(customMsg), jsStringW(args.ES, response) }, 2);
         }
-        public Task<(IntPtr view, IntPtr es, string value)> RunJs(string script, Action<IntPtr, IntPtr, long> hook=null)
+        public string RunJs(string script)
         {
-            TaskCompletionSource<(IntPtr view, IntPtr es, string value)> tcs = new TaskCompletionSource<(IntPtr view, IntPtr es, string value)>();
             var jv = MiniBlink.NativeMethods.wkeRunJS(WebView, script);
             var es = MiniBlink.NativeMethods.wkeGlobalExec(WebView);
             var val = MiniBlink.NativeMethods.jsToString(es, jv);
-            if (hook != null)
-                hook(this.WebView, es, jv);
-            tcs.SetResult((this.WebView, es, val));
-            return tcs.Task;
+            return val;
+        }
+        public void JsExecStateInvoke(Action<IntPtr> action)
+        {
+            var es = wkeGlobalExec(this.WebView);
+            action(es);
         }
         IntPtr webView_=IntPtr.Zero;
         IntPtr parentHandle_ = IntPtr.Zero;
@@ -403,7 +385,9 @@ namespace Tnelab.HtmlView
         Dictionary<long, JsQueryEventArgs> queryMap_ = new Dictionary<long, JsQueryEventArgs>();
         void OnJsQuery(object sender,JsQueryEventArgs args)
         {
-            args.Request = Encoding.UTF8.GetString(Convert.FromBase64String(args.Request));
+            if ((IntPtr)sender != this.webView_)
+                return;
+            args.Request = TneEncoder.UnEscape(args.Request);
             if (this.JsQuery != null)
             {
                 //Task.Factory.StartNew(() =>

@@ -38,15 +38,14 @@ namespace Tnelab.HtmlView
             {
                 var settings = new mbSettings();
                 settings.mask = (uint)mbSettingMask.MB_SETTING_PAINTCALLBACK_IN_OTHER_THREAD;
-                mbInit(ref settings);
+                mbInit(ref settings);               
                 isInited_ = true;
             }
 
             this.parentHandle_ = parentHandle;
             var rect = new NativeMethods.RECT();
             NativeMethods.GetWindowRect(parentHandle, out rect);
-            webView_ = mbCreateWebWindow(mbWindowType.MB_WINDOW_TYPE_TRANSPARENT, parentHandle, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
-            this.paintUpdatedCallback_ = this.OnPaintCallback;
+            webView_ = mbCreateWebWindow(mbWindowType.MB_WINDOW_TYPE_TRANSPARENT, parentHandle, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top); this.paintUpdatedCallback_ = this.OnPaintCallback;
             mbOnPaintUpdated(webView_, this.paintUpdatedCallback_, IntPtr.Zero);
             this.titleChangedCallback_ = this.OnTitleChanged;
             mbOnTitleChanged(webView_,  this.titleChangedCallback_, IntPtr.Zero);
@@ -57,15 +56,9 @@ namespace Tnelab.HtmlView
             this.consoleCallback_ = this.OnConsole;
             mbOnConsole(webView_, this.consoleCallback_, IntPtr.Zero);
         }
-        List<Action> uiInvokeList = new List<Action>();
-        object uiInvokeListLock_ = new object();
         public void UIInvoke(Action action)
         {
-            lock (uiInvokeListLock_)
-            {
-                uiInvokeList.Add(action);
-            }
-            NativeMethods.SendMessageW(this.parentHandle_, NativeMethods.WM_UI_INVOKE, 0, 0);
+            TneApplication.UIInvoke(action);
         }
         public (int result,bool isHandle) ProcessWindowMessage(IntPtr hwnd, uint msg, uint wParam, uint lParam)
         {
@@ -75,18 +68,6 @@ namespace Tnelab.HtmlView
             {
                 switch (msg)
                 {
-                    //case NativeMethods.WM_PAINT:
-                    //    break;
-                    case NativeMethods.WM_UI_INVOKE:
-                        lock (uiInvokeListLock_)
-                        {
-                            foreach(var action in uiInvokeList)
-                            {
-                                action();
-                            }
-                            uiInvokeList.Clear();
-                        }
-                        break;
                     case NativeMethods.WM_SIZE:
                         {
                             var newWidth = NativeMethods.LOWORD(lParam);
@@ -170,22 +151,34 @@ namespace Tnelab.HtmlView
         }
         public void ResponseJsQuery(IntPtr webView,Int64 queryId,int customMsg,string response)
         {
-            response = Convert.ToBase64String(Encoding.UTF8.GetBytes(response));
+            response = TneEncoder.Escape(response);
             mbResponseQuery(webView, queryId, customMsg, response);
         }
-        public Task<(IntPtr view, IntPtr es, string value)> RunJs(string script, Action<IntPtr, IntPtr, long> hook=null)
+        public string RunJs(string script)
         {
-            TaskCompletionSource<(IntPtr view, IntPtr es, string value)> tcs = new TaskCompletionSource<(IntPtr view, IntPtr es, string value)>();
+            TaskCompletionSource<string> tcs = new TaskCompletionSource<string>();
             UIInvoke(() => {
                 var frame = mbWebFrameGetMainFrame(this.WebView);
                 mbRunJs(this.WebView, frame, script, true, (view, p, es, jv) => {
                     var val = mbJsToString(es, jv);
-                    if (hook != null)
-                        hook(view, es, jv);
-                    tcs.SetResult((view, es, val));
+                    tcs.SetResult(val);
                 }, IntPtr.Zero, IntPtr.Zero);
             });
-            return tcs.Task;
+            tcs.Task.Wait();
+            return tcs.Task.Result;
+        }
+        public void JsExecStateInvoke(Action<IntPtr> action)
+        {
+            TaskCompletionSource<string> tcs = new TaskCompletionSource<string>();
+            UIInvoke(() => {
+                var frame = mbWebFrameGetMainFrame(this.WebView);
+                mbRunJs(this.WebView, frame, "", false, (view, p, es, jv) => {
+                    var val = "OK";
+                    action(es);
+                    tcs.SetResult(val);
+                }, IntPtr.Zero, IntPtr.Zero);
+            });
+            tcs.Task.Wait();
         }
         IntPtr webView_=IntPtr.Zero;
         IntPtr parentHandle_ = IntPtr.Zero;
@@ -293,7 +286,7 @@ namespace Tnelab.HtmlView
         object jsqueryLock_ = new object();
         void OnJsQuery(IntPtr webView, IntPtr param, IntPtr es, Int64 queryId, int customMsg, string request)
         {
-            request = Encoding.UTF8.GetString(Convert.FromBase64String(request));
+            request = TneEncoder.UnEscape(request);
             if (this.JsQuery != null)
             {
                 var args = new JsQueryEventArgs();

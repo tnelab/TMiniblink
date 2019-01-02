@@ -31,7 +31,12 @@ declare namespace Tnelab {
     let ThisForm: TneForm;
 }
 declare namespace Tnelab {
-    class TneForm extends Tnelab.NativeObject {
+    class TneFormBase extends NativeObject {
+        GetHtmlWindow(): Window;
+    }
+}
+declare namespace Tnelab {
+    class TneForm extends Tnelab.TneFormBase {
         readonly Handle: any;
         readonly Title: string;
         SizeAble: boolean;
@@ -39,6 +44,7 @@ declare namespace Tnelab {
         Y: number;
         Width: number;
         Height: number;
+        ShowInTaskBar: boolean;
         MinWidth: number;
         MinHeight: number;
         Url: string;
@@ -46,6 +52,7 @@ declare namespace Tnelab {
         WindowState: any;
         Parent: any;
         Icon: string;
+        RunFunc(func: () => string): string;
         Close(): void;
         ShowDialog(): void;
         Show(): void;

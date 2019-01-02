@@ -1,11 +1,13 @@
-﻿//tne://to_ts?namespace=BLL&TneAppPath=../Tnelab.TneForm/TneApp.d.ts
+﻿//tne://to_ts
+//namespace:BLL
+//import:../Tnelab.TneForm/TneApp.d.ts
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Tnelab.TneForm.Test.BLL
 {
-    class SimpleTestService
+    public class SimpleTestService
     {
         public string Name { get; set; }
         public int Age { get; set; }

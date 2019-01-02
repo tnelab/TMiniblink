@@ -133,35 +133,39 @@ namespace Tnelab.TneAppMapTool
                 ThreadHelper.ThrowIfNotOnUIThread();
                 CodeModel codeModel = new CodeModel(doc.ProjectItem.FileCodeModel);
                 var theNamespace = codeModel.NamespaceName;
-                var tneAppPath = "TneApp.d.ts";
-                tneTxt = tneTxt.Remove(0, 2);
-                var uri = new Uri(tneTxt);
-                 if (!string.IsNullOrEmpty(uri.Query))
+                List<string> theImportList = new List<string>();
+                var theBase = "Tnelab.NativeObject";
+                var tdoc = doc.Object("TextDocument") as TextDocument;
+                var sp = tdoc.StartPoint;
+                var ep = sp.CreateEditPoint();
+                var lineNum = 2;
+                while (true)
                 {
-                    var query = uri.Query.Remove(0, 1);
-                    var nameAndValues = query.Split('&');
-                    foreach(var nv in nameAndValues)
+                    var txt = ep.GetLines(lineNum, lineNum+1).Trim();
+                    if (txt.StartsWith("//namespace:",StringComparison.OrdinalIgnoreCase))
                     {
-                        if (nv.StartsWith("namespace=", StringComparison.OrdinalIgnoreCase))
-                        {
-                            var nss = nv.Split('=');
-                            if (nss.Length == 2&&!string.IsNullOrEmpty(nss[1]))
-                            {
-                                theNamespace = nss[1];
-                            }
-                         }
-                        else if (nv.StartsWith("TneAppPath=", StringComparison.OrdinalIgnoreCase))
-                        {
-                            var nss = nv.Split('=');
-                            if (nss.Length == 2 && !string.IsNullOrEmpty(nss[1]))
-                            {
-                                tneAppPath = nss[1];
-                            }
-                        }
+                        theNamespace = txt.Split(':')[1].Trim();
                     }
+                    else if(txt.StartsWith("//base:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        theBase = txt.Split(':')[1].Trim();
+                    }
+                    else if (txt.StartsWith("//import:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        theImportList.Add(txt.Split(':')[1].Trim());
+                    }
+                    else
+                    {
+                        break;
+                    }
+                    lineNum++;
                 }
-              
-                var code = JsNativeMapBuilder.Build(codeModel, theNamespace, tneAppPath);
+                if (theImportList.Count == 0)
+                {
+                    theImportList.Add("TneApp.d.ts");
+                }
+                             
+                var code = JsNativeMapBuilder.Build(codeModel, theNamespace, theBase,theImportList);
                 var filePath = $"{doc.FullName}.ts";
                 ProjectItem tsItem = null;
                 bool canSave = true;
@@ -178,8 +182,8 @@ namespace Tnelab.TneAppMapTool
                     if (!canSave)
                         w.Activate();
                 }
-                var tdoc = tsItem.Document.Object("TextDocument") as TextDocument;
-                var tsEditPoint = tdoc.StartPoint.CreateEditPoint();
+                var tdoc2 = tsItem.Document.Object("TextDocument") as TextDocument;
+                var tsEditPoint = tdoc2.StartPoint.CreateEditPoint();
                 tsEditPoint.Delete(100000);
                 tsEditPoint.Insert(code);
                 if (canSave)

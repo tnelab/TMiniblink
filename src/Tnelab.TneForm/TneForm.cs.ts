@@ -1,9 +1,10 @@
 //此代码由机器生成，请不要手动修改
 ///<reference path="./TneMap.ts"/>
+///<reference path="./TneFormBase.ts"/>
 namespace Tnelab{
 	@Tnelab.ConstructorInfo()
 	@Tnelab.ToMap("Tnelab.TneForm","Tnelab.HtmlView.TneForm")
-	export class TneForm extends Tnelab.NativeObject {
+	export class TneForm extends Tnelab.TneFormBase {
 		public get Handle():any { return undefined; }
 		public get Title():string { return undefined; }
 		@Tnelab.InvokeInfo(undefined,"System.Boolean")
@@ -21,6 +22,9 @@ namespace Tnelab{
 		@Tnelab.InvokeInfo(undefined,"System.Int32")
 		public set Height(value:number) { }
 		public get Height():number { return undefined; }
+		@Tnelab.InvokeInfo(undefined,"System.Boolean")
+		public set ShowInTaskBar(value:boolean) { }
+		public get ShowInTaskBar():boolean { return undefined; }
 		@Tnelab.InvokeInfo(undefined,"System.Int32")
 		public set MinWidth(value:number) { }
 		public get MinWidth():number { return undefined; }
@@ -42,6 +46,8 @@ namespace Tnelab{
 		@Tnelab.InvokeInfo(undefined,"System.String")
 		public set Icon(value:string) { }
 		public get Icon():string { return undefined; }
+		@Tnelab.InvokeInfo("RunFunc", "System.Func<System.String>")
+		public RunFunc(func:()=>string):string {return undefined;}
 		@Tnelab.InvokeInfo("Close")
 		public Close():void {}
 		@Tnelab.InvokeInfo("ShowDialog")
