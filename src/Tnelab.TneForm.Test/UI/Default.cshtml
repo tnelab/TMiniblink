@@ -3,7 +3,15 @@
     ViewBag.Title = "TMniniblink测试程序";
     Layout = "_Layout.cshtml";
 }
+@section styles{
+    <style>
+        .button {
+            color: white;
+        }
+    </style>
+}
 @section scripts{
     <script src="Script/Default.js"></script>
 }
-<a href="javascript:InvokeTest()">调用测试</a>
+<a class="button" href="javascript:InvokeTest()">调用测试</a><br />
+<a class="button" href="javascript:showId()">显示ID</a><br />

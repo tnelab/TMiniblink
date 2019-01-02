@@ -21,6 +21,7 @@
     <None Remove="Default.ts" />
     <None Remove="UI\css\window.css" />
     <None Remove="UI\Default.html" />
+    <None Remove="UI\img\bg.jpg" />
     <None Remove="UI\Script\window.js" />
     <None Remove="UI\Script\window.ts" />
   </ItemGroup>
@@ -28,6 +29,7 @@
   <ItemGroup>
     <EmbeddedResource Include="default.png" />
     <EmbeddedResource Include="UI\css\window.css" />
+    <EmbeddedResource Include="UI\img\bg.jpg" />
     <EmbeddedResource Include="UI\Script\Default.js" />
     <EmbeddedResource Include="UI\Default.html">
       <Generator></Generator>

@@ -4,18 +4,28 @@
 }
 html {
     background: #ffffff;
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255,0);
+    border-radius: 10px;
 }
 body {
-    position: absolute;
-    height:calc(100%);
-    width:100%;
+    position:absolute;
+    height: calc(100%);
+    width: calc(100%);
+    border-radius: 10px;
+    overflow:hidden;
 }
 .caption_bar {
     color: white;
     line-height: 30px;
     height: 30px;
-    background-color: cadetblue;
+    background: rgba(95,158,160,0.0);
+    box-sizing: border-box;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    border-bottom-color: #e5e580;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    box-shadow: 0px 0px 40px #e5e580 inset;
 }
 .caption {
     color: white;
@@ -35,9 +45,55 @@ body {
     height: 22px;
     float: left;
 }
+.window_bg {
+    background-color: rgba(255,0,0,0);
+    position: absolute;
+    box-sizing: border-box content-box;
+    height: calc(100%);
+    width: calc(100%);
+    border-radius: 10px;
+    opacity: 0.9;
+    background-image: url(/ui/img/bg.jpg);
+    z-index: 1;
+    -webkit-filter: blur(1px);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    -webkit-animation: mymove 2s;
+    overflow: hidden;
+}
+.window {
+    position: absolute;
+    box-sizing: border-box;
+    border-radius: 10px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #e5e580;
+    height: calc(100%);
+    width: calc(100%);
+    box-shadow: 0px 0px 10px #e5e580 inset;
+    z-index: 2;
+    -webkit-animation: mymove 2s;
+    overflow: hidden;
+}
+@-webkit-keyframes mymove
+{
+    from {
+        opacity: 0.0;
+        -webkit-transform: scale(0.1) rotate(0deg);        
+    }
+    to {
+        opacity: 1.0;
+        -webkit-transform: scale(1.0) rotate(360deg);
+    }
+}
 .window_client {
+    box-sizing: content-box;
     padding: 6px;
     background: #ff0000;
-    background: rgba(255,0,0,0.4);
+    background: rgba(95,158,160,0.0);
     height: calc(100% - 42px);
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    overflow: auto;
+    z-index: 3;
 }
