@@ -196,25 +196,34 @@ namespace Tnelab.HtmlView
                     throw new Exception("窗口已经被释放");
                 if (this.Handle == IntPtr.Zero)
                     throw new Exception("窗口还为创建");
-                if (this.Parent != null)
-                {                
-                    NativeMethods.EnableWindow(this.Parent.Handle, true);
-                    NativeMethods.SetActiveWindow(this.Parent.Handle);
-                }
                 NativeMethods.CloseWindow(this.Handle);
                 NativeMethods.DestroyWindow(this.Handle);
             });
         }
-        public void ShowDialog() { }
-        public void Show() {
+        bool isStartDialog_ = false;
+        public void ShowDialog() {
             if (this.Handle == IntPtr.Zero)
             {
                 CreateWindow();
             }
-
+            this.WindowState = this.WindowState;
             if (this.Parent != null)
             {
-                NativeMethods.EnableWindow(this.Parent.Handle, false);
+                NativeMethods.EnableWindow(Parent.Handle, false);
+            }
+            if (TneApplication.IsVip)
+            {
+                this.isStartDialog_ = true;
+                while (isStartDialog_)
+                {
+                    TneApplication.DoEvent();
+                }
+            }
+        }
+        public void Show() {
+            if (this.Handle == IntPtr.Zero)
+            {
+                CreateWindow();
             }
             this.WindowState = this.WindowState;
         }
@@ -308,6 +317,15 @@ namespace Tnelab.HtmlView
                     WmGetMinMaxInfo(hWnd, lParam);
                     break;
                 case NativeMethods.WM_DESTROY:
+                    if (isStartDialog_)
+                    {
+                        this.isStartDialog_ = false;
+                    }
+                    if (this.Parent != null)
+                    {
+                        NativeMethods.EnableWindow(this.Parent.Handle, true);
+                        NativeMethods.SetForegroundWindow(this.Parent.Handle);
+                    }
                     if (this == TneApplication.MainForm)
                         NativeMethods.PostQuitMessage(0);
                     else

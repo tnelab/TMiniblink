@@ -445,6 +445,8 @@ namespace Tnelab.HtmlView
         public static extern BOOL PtInRect(ref RECT lprc,POINT pt);
         [DllImport("user32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true,CharSet =CharSet.Unicode)]
         public static extern HCURSOR LoadCursorW(HINSTANCE hInstance,uint lpCursorName);
+        [DllImport("user32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        public static extern BOOL SetForegroundWindow(HWND hWnd);
         public static ushort LOWORD(uint value)
         {
             return (ushort)(value & 0xFFFF);

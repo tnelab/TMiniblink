@@ -1,20 +1,34 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 ///<reference path="../../../Tnelab.TneForm/TneApp.d.ts"/>
-async function MaxWindow(elm) {
-    let old = await Tnelab.ThisForm.WindowState;
-    let state = old === 1 ? 2 : 1;
-    await (Tnelab.ThisForm.WindowState = state);
-    if (state === 1) {
-        elm.innerText = "恢复";
-    }
-    else if (state === 2) {
-        elm.innerText = "最大化";
-    }
+function MaxWindow(elm) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let old = yield Tnelab.ThisForm.WindowState;
+        let state = old === 1 ? 2 : 1;
+        yield (Tnelab.ThisForm.WindowState = state);
+        if (state === 1) {
+            elm.innerText = "恢复";
+        }
+        else if (state === 2) {
+            elm.innerText = "最大化";
+        }
+    });
 }
-async function MiniWindow() {
-    await (Tnelab.ThisForm.WindowState = 3);
+function MiniWindow() {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield (Tnelab.ThisForm.WindowState = 3);
+    });
 }
-async function MoveWindow() {
-    var maxButton = document.getElementById("MaxButton");
-    maxButton.innerText = "最大化";
-    Tnelab.ThisForm.Move();
+function MoveWindow() {
+    return __awaiter(this, void 0, void 0, function* () {
+        var maxButton = document.getElementById("MaxButton");
+        maxButton.innerText = "最大化";
+        Tnelab.ThisForm.Move();
+    });
 }

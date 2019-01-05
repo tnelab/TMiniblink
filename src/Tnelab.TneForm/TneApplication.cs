@@ -37,6 +37,29 @@ namespace Tnelab.HtmlView
             }
         }
         static int? mainTaskId_ = null;
+        public static void DoEvent()
+        {
+            if (IsMainTask())
+            {
+                lock (uiInvokeListLock_)
+                {
+                    if (uiInvokeList_.Count > 0)
+                    {
+                        foreach (var action in uiInvokeList_)
+                        {
+                            action();
+                        }
+                        uiInvokeList_.Clear();
+                    }
+                }
+            }
+            UIInvoke(() => {
+                NativeMethods.MSG msg = new NativeMethods.MSG();
+                NativeMethods.GetMessage(ref msg, IntPtr.Zero, 0, 0);
+                NativeMethods.TranslateMessage(ref msg);
+                NativeMethods.DispatchMessage(ref msg);
+            });
+        }
         static void WatchMsg()
         {
             NativeMethods.MSG msg = new NativeMethods.MSG();
@@ -44,11 +67,14 @@ namespace Tnelab.HtmlView
             {
                 lock (uiInvokeListLock_)
                 {
-                    foreach (var action in uiInvokeList_)
+                    if (uiInvokeList_.Count > 0)
                     {
-                        action();
+                        foreach (var action in uiInvokeList_)
+                        {
+                            action();
+                        }
+                        uiInvokeList_.Clear();
                     }
-                    uiInvokeList_.Clear();
                 }
                 NativeMethods.TranslateMessage(ref msg);
 

@@ -1339,7 +1339,7 @@ namespace Tnelab.MiniBlink
         public extern static jsValue jsFalse();
 
         [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)]
-        public extern static jsValue jsString(jsExecState es, string str);
+        public extern static jsValue jsString(jsExecState es, [MarshalAs(UnmanagedType.CustomMarshaler,MarshalTypeRef = typeof(Tnelab.MiniBlinkV.Utf8Marshaler))]string str);
         [DllImport(MiniBlinkDll, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
         public extern static jsValue jsStringW(jsExecState es, string str);
         [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]

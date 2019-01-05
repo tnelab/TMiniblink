@@ -5,7 +5,8 @@ async function InvokeTest() {
         //var simple = await new BLL.SimpleTestService().Ready();
         newForm = await new Tnelab.TneForm().Ready();
         await (newForm.Url = "Tne://Tnelab.TneForm.Test/ui/default.html?cmd=测试");
-        await newForm.Show();       
+        await (newForm.Parent = Tnelab.ThisForm);
+        await newForm.ShowDialog();
         //var t = await newForm.RunFunc(function () {
         //    var win = window as any;
         //    win.MiniWindow();

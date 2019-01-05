@@ -61,9 +61,11 @@ namespace Tnelab.HtmlView
             var rect = new NativeMethods.RECT();
             NativeMethods.GetWindowRect(parentHandle, out rect);
             //zmg
-            webView_ = wkeCreateWebWindow(wkeWindowType.WKE_WINDOW_TYPE_TRANSPARENT, parentHandle, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
-            wkeSetHandle(webView_, parentHandle);
-            //wkeSetHandle(webView_,parentHandle);
+            webView_ = wkeCreateWebView();//wkeCreateWebWindow(wkeWindowType.WKE_WINDOW_TYPE_TRANSPARENT, parentHandle, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);            
+            wkeSetHandle(webView_,parentHandle);
+            wkeSetTransparent(webView_, true);
+            wkeResize(webView_,rect.right-rect.left,rect.bottom-rect.top);
+
             this.paintUpdatedCallback_ = this.OnPaintCallback;
             wkeOnPaintUpdated(webView_, this.paintUpdatedCallback_, IntPtr.Zero);
             this.titleChangedCallback_ = this.OnTitleChanged;
