@@ -9,7 +9,7 @@ namespace Tnelab.HtmlView.Test
     {
         static void Main(string[] args)
         {
-            //TneApplication.SetToVip();
+            TneApplication.SetToVip();
             var f1 = new TneForm();
             f1.Icon = "default.png";
             //f1.WindowState = WindowState.Maximized;

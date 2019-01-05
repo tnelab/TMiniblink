@@ -10,7 +10,7 @@ using static Tnelab.MiniBlinkV.NativeMethods;
 using System.Runtime.InteropServices;
 namespace Tnelab.HtmlView
 {
-    enum TneQueryId { NativeMap = 1, RegisterNativeMap = 2, DeleteNativeObject = 3 ,GetThisFormHashCode=4}
+    enum TneQueryId { NativeMap = 1, RegisterNativeMap = 2, DeleteNativeObject = 3 ,GetThisFormHashCode=4, RunFunctionForTneForm = 5}
     interface IJsNativeMaper
     {
         long AddBrowser(IWebBrowser browser, Func<object> GetParentControl);
@@ -76,6 +76,7 @@ namespace Tnelab.HtmlView
             browser.ResponseJsQuery(args.WebView, args.QueryId, args.CustomMsg, "OK");
         }
         //JsNativeMaper() { }
+        object webBrowserDicLock_ = new object();
         public long AddBrowser(IWebBrowser browser, Func<object> getParentControl)
         {
             if (browser == null)
@@ -100,26 +101,44 @@ namespace Tnelab.HtmlView
                             wb.ResponseJsQuery(args.WebView, args.QueryId, args.CustomMsg, wbinfo.ParentControlId.ToString());
                         }
                         break;
+                    case TneQueryId.RunFunctionForTneForm:
+                        {
+                            var runInfo = JsonConvert.DeserializeObject<RunFunctionForTneFormInfo>(args.Request);
+                            var wb = webBrowser as IWebBrowser;
+                            var wbinfo = GetBrowserInfo(wb);
+                            var tneForm=wbinfo.GetNativeObject(runInfo.TneFormId,false) as TneForm;
+                            var result=tneForm.WebBrowser.RunJs($"return ({runInfo.Function})({runInfo.Arg})");
+                            wb.ResponseJsQuery(args.WebView, args.QueryId, args.CustomMsg, result);
+                        }
+                        break;
                     default:
                         throw new Exception("未知JS消息");
                 }
             };
-            var info = new WebBrowserInfo(browser, getParentControl);            
-            WebBrowserInfoDic.Add(browser, info);            
+            var info = new WebBrowserInfo(browser, getParentControl);
+            lock (webBrowserDicLock_)
+            {
+                WebBrowserInfoDic.Add(browser, info);
+            }
             return info.ParentControlId;
         }
         public void RemoveBrowser(IWebBrowser browser)
         {
-            if (WebBrowserInfoDic.ContainsKey(browser))
-            {
-                //var info = WebBrowserInfoDic[browser];
-                WebBrowserInfoDic.Remove(browser);
+            lock (webBrowserDicLock_) { 
+                if (WebBrowserInfoDic.ContainsKey(browser))
+                {
+                    //var info = WebBrowserInfoDic[browser];
+                    WebBrowserInfoDic.Remove(browser);
+                }
             }
         }
         readonly Dictionary<IWebBrowser,WebBrowserInfo> WebBrowserInfoDic = new Dictionary<IWebBrowser, WebBrowserInfo>();
         WebBrowserInfo GetBrowserInfo(IWebBrowser browser)
         {
-            return WebBrowserInfoDic.Values.SingleOrDefault(item => item.WebBrowser == browser);
+            lock (webBrowserDicLock_)
+            {
+                return WebBrowserInfoDic.Values.SingleOrDefault(item => item.WebBrowser == browser);
+            }
         }
     }
 }

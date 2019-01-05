@@ -22,6 +22,7 @@ var Tnelab;
         TneQueryId[TneQueryId["RegisterNativeMap"] = 2] = "RegisterNativeMap";
         TneQueryId[TneQueryId["DeleteNativeObject"] = 3] = "DeleteNativeObject"; /*删除本机对象*/
         TneQueryId[TneQueryId["GetThisFormHashCode"] = 4] = "GetThisFormHashCode"; /*获取当前窗口ID*/
+        TneQueryId[TneQueryId["RunFunctionForTneForm"] = 5] = "RunFunctionForTneForm"; /*获取只当TneForm的Html窗口对象*/
     })(TneQueryId || (TneQueryId = {}));
     ;
     let GcMap = new Map();
@@ -79,6 +80,13 @@ var Tnelab;
         let args = id.toString();
         TneQueryAsync(TneQueryId.DeleteNativeObject, args);
     }
+    //在TneForm中执行Function
+    async function RunFunctionForTneForm(theTneForm, json, func) {
+        let request = JSON.stringify({ TneFormId: theTneForm.TneMapNativeObjectId, Arg: json, Function: func.toString() });
+        let result = await TneQueryAsync(TneQueryId.RunFunctionForTneForm, request);
+        return result;
+    }
+    Tnelab.RunFunctionForTneForm = RunFunctionForTneForm;
     //var JsFunctionMap: Map<number, Function> = new Map<number, Function>();
     /////////////////////////////////////////////////////////////////////////JsNativeMap
     //装饰器，用于修饰本机映射
@@ -599,12 +607,12 @@ var Tnelab;
     document.addEventListener("DOMContentLoaded", dom_ready_, true);
     /////////////////////////////////////////////////////////////////////////////////JSON
 })(Tnelab || (Tnelab = {}));
+///<reference path="./TneMap.ts"/>
 var Tnelab;
 (function (Tnelab) {
     class TneFormBase extends Tnelab.NativeObject {
-        GetHtmlWindow() {
-            alert("HI");
-            return window;
+        async RunFunc(func, json) {
+            return await Tnelab.RunFunctionForTneForm(this, json, func);
         }
     }
     Tnelab.TneFormBase = TneFormBase;
@@ -644,7 +652,6 @@ var Tnelab;
         get Parent() { return undefined; }
         set Icon(value) { }
         get Icon() { return undefined; }
-        RunFunc(func) { return undefined; }
         Close() { }
         ShowDialog() { }
         Show() { }
@@ -695,9 +702,6 @@ var Tnelab;
     __decorate([
         Tnelab.InvokeInfo(undefined, "System.String")
     ], TneForm.prototype, "Icon", null);
-    __decorate([
-        Tnelab.InvokeInfo("RunFunc", "System.Func<System.String>")
-    ], TneForm.prototype, "RunFunc", null);
     __decorate([
         Tnelab.InvokeInfo("Close")
     ], TneForm.prototype, "Close", null);

@@ -9,7 +9,7 @@
     ////////////////////////////////////////////////////////////////////////////*/
     /////////////////////////////////////////////////////////////////////////全局
     //js通讯通道分类
-    enum TneQueryId { NativeMap = 1/*本机对象调用映射*/, RegisterNativeMap/*注册类型映射*/ = 2, DeleteNativeObject = 3/*删除本机对象*/, GetThisFormHashCode = 4 /*获取当前窗口ID*/ };
+    enum TneQueryId { NativeMap = 1/*本机对象调用映射*/, RegisterNativeMap/*注册类型映射*/ = 2, DeleteNativeObject = 3/*删除本机对象*/, GetThisFormHashCode = 4 /*获取当前窗口ID*/, RunFunctionForTneForm=5/*获取只当TneForm的Html窗口对象*/};
     //原始js通讯声明
     declare function mbQuery(msgId: number, request: string, onResponse: (id: number, response: string) => any): void;
     let GcMap = new Map<number, object>();
@@ -65,6 +65,12 @@
     function DeleteNativeObject(id: number): void {
         let args = id.toString();
         TneQueryAsync(TneQueryId.DeleteNativeObject, args);
+    }
+    //在TneForm中执行Function
+    export async function RunFunctionForTneForm(theTneForm: TneFormBase, json: string, func: (json: string) => Promise<string>): Promise<string> {
+        let request = JSON.stringify({ TneFormId: theTneForm.TneMapNativeObjectId, Arg: json, Function: func.toString() });
+        let result=await TneQueryAsync(TneQueryId.RunFunctionForTneForm, request);
+        return result;
     }
     //var JsFunctionMap: Map<number, Function> = new Map<number, Function>();
     /////////////////////////////////////////////////////////////////////////JsNativeMap

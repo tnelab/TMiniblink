@@ -139,9 +139,11 @@ namespace Tnelab.HtmlView
             get =>url_;
             set
             {
-                if (webBrowser_ != null)
+                if (WebBrowser != null)
                 {
-                    webBrowser_.Url = value;
+                    TneApplication.UIInvoke(() => { 
+                        WebBrowser.Url = value;
+                    });
                 }
                 url_ = value;
             }
@@ -186,10 +188,6 @@ namespace Tnelab.HtmlView
         public TneForm()
         {
             this.WindowIndex_ = NewWindowIndex();
-        }
-        public string RunFunc(Func<string> func)
-        {
-            return func();
         }
         public void Close()
         {
@@ -284,9 +282,9 @@ namespace Tnelab.HtmlView
                 isBorderRect_ = false;
                 return result;
             }
-            if (webBrowser_ != null)
+            if (WebBrowser != null)
             {
-                (result, isHandled) = webBrowser_.ProcessWindowMessage(hWnd, message, wParam, lParam);
+                (result, isHandled) = WebBrowser.ProcessWindowMessage(hWnd, message, wParam, lParam);
                 if (isHandled)
                     return result;
             }
@@ -334,7 +332,7 @@ namespace Tnelab.HtmlView
         long WindowIndex_ { get; set; }
         string ClassName_ { get => $"TneForm{this.WindowIndex_}"; }
         bool IsDesdroyed_ = false;
-        IWebBrowser webBrowser_;
+        internal IWebBrowser WebBrowser { get; private set; }
         void CreateWindow()
         {
             TneApplication.UIInvoke(() =>
@@ -392,19 +390,19 @@ namespace Tnelab.HtmlView
                 {
                     throw new Exception($"创建窗口失败,错误代码:{Marshal.GetLastWin32Error()}");
                 }
-                if (webBrowser_ == null)
+                if (WebBrowser == null)
                 {
                     TneApplication.ReadOnlyVipFlag = true;
                     if (TneApplication.IsVip)
                     {
-                        webBrowser_ = new WebBrowserByVip(result);
+                        WebBrowser = new WebBrowserByVip(result);
                     }
                     else
                     {
-                        webBrowser_ = new WebBrowserByWke(result);
+                        WebBrowser = new WebBrowserByWke(result);
                     }
-                    JsNativeMaper.This.AddBrowser(this.webBrowser_, () => this);
-                    webBrowser_.TitleChanged += (sender, args) =>
+                    JsNativeMaper.This.AddBrowser(this.WebBrowser, () => this);
+                    WebBrowser.TitleChanged += (sender, args) =>
                     {
                         this.Title = args;
                     };
@@ -497,7 +495,7 @@ namespace Tnelab.HtmlView
                 NativeMethods.CloseWindow(this.Handle);
                 NativeMethods.DestroyWindow(this.Handle);
             }
-            JsNativeMaper.This.RemoveBrowser(this.webBrowser_);
+            JsNativeMaper.This.RemoveBrowser(this.WebBrowser);
         }
     }
 }

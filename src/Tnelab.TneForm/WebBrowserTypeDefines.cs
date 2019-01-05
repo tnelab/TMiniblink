@@ -12,6 +12,11 @@ namespace Tnelab.HtmlView
 {
     enum MapAction { Create = 1, SetAccess = 2, GetAccess = 3, StaticInvoke = 4, InstanceInvoke = 5 }
     enum MapDataType { NativeObjectId = 1, Value = 2, FunctionId = 3 };
+    class RunFunctionForTneFormInfo {
+        public long TneFormId { get; set; }
+        public string Arg { get; set; }
+        public string Function { get; set; }
+    }
     class MapDataInfo
     {
         public MapDataType DataType { get; set; }

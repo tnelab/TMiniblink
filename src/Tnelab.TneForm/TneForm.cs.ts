@@ -46,8 +46,6 @@ namespace Tnelab{
 		@Tnelab.InvokeInfo(undefined,"System.String")
 		public set Icon(value:string) { }
 		public get Icon():string { return undefined; }
-		@Tnelab.InvokeInfo("RunFunc", "System.Func<System.String>")
-		public RunFunc(func:()=>string):string {return undefined;}
 		@Tnelab.InvokeInfo("Close")
 		public Close():void {}
 		@Tnelab.InvokeInfo("ShowDialog")

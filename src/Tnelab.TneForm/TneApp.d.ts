@@ -2,6 +2,7 @@ declare namespace Tnelab {
     function OnSetGC(id: number, gc: object): void;
     function OnCallJs(args: any): any;
     function OnResponse(msgId: number, response: string): string;
+    function RunFunctionForTneForm(theTneForm: TneFormBase, json: string, func: (json: string) => Promise<string>): Promise<string>;
     function InvokeInfo(nativeName: string, ...args: string[]): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
     class JsMapInfo {
         private static MapDicByNativeTypePath;
@@ -32,7 +33,8 @@ declare namespace Tnelab {
 }
 declare namespace Tnelab {
     class TneFormBase extends NativeObject {
-        GetHtmlWindow(): Window;
+        RunFunc(func: () => Promise<string>): any;
+        RunFunc(func: (json: string) => Promise<string>, json: string): any;
     }
 }
 declare namespace Tnelab {
@@ -52,7 +54,6 @@ declare namespace Tnelab {
         WindowState: any;
         Parent: any;
         Icon: string;
-        RunFunc(func: () => string): string;
         Close(): void;
         ShowDialog(): void;
         Show(): void;
