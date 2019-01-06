@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using EnvDTE;
+using System.Reflection;
 
 
 namespace Tnelab.TneAppMapTool
@@ -23,6 +24,9 @@ namespace Tnelab.TneAppMapTool
         public List<string> GenericTypeArguments = new List<string>();
         public string ParamString { get; set; }
         public string InvokeParamString { get; set; }
+        public bool IsStatic { get; set; } = false;
+        public bool IsVirtual { get; set; } = false;
+        public bool IsAbstract { get; set; } = false;
     }
     class CodePropertyInfo
     {
@@ -30,6 +34,9 @@ namespace Tnelab.TneAppMapTool
         public string TypeName { get; set; }
         public bool HasSet { get; set; }
         public bool HasGet { get; set; }
+        public bool IsStatic { get; set; } = false;
+        public bool IsVirtual { get; set; } = false;
+        public bool IsAbstract { get; set; } = false;
         public List<CodeParamInfo> ParamList = new List<CodeParamInfo>();
     }
     class CodeModel
@@ -38,12 +45,59 @@ namespace Tnelab.TneAppMapTool
         public string NamespaceName { get; set; }
         public string ClassName { get; set; }
         public string ShortClassName { get; set; }
+        public bool IsAbstract { get; set; } = false;
         public List<CodeFunctionInfo> CodeConstructorList = new List<CodeFunctionInfo>();
         public List<CodeFunctionInfo> CodeFunctionList = new List<CodeFunctionInfo>();
         public List<CodePropertyInfo> CodePropertyList = new List<CodePropertyInfo>();
         public List<string> GenericTypeArguments = new List<string>();
 
-
+        public CodeModel(string theType)
+        {
+            Type type = Type.GetType(theType);
+            NamespaceName = type.Namespace;
+            ClassName = type.Name;
+            IsAbstract = type.IsAbstract;
+            if (type.IsGenericType)
+            {
+                var gas = type.GetGenericArguments();
+                for (var i = 0; i < gas.Length; i++)
+                {
+                    GenericTypeArguments.Add(gas[i].Name);
+                }
+                ClassName=$"{ClassName.Split('`')[0]}<{string.Join(",",GenericTypeArguments.ToArray())}>";
+            }
+            var cons = type.GetConstructors(BindingFlags.Public| BindingFlags.Instance);
+            foreach(var con in cons)
+            {
+                CodeFunctionInfo func_info = new CodeFunctionInfo();
+                var pars = con.GetParameters();
+                func_info.ParamList.AddRange(pars.Select(it=>new CodeParamInfo() { Name=it.Name,TypeName=GetTypeName(it.ParameterType) }));
+                CodeConstructorList.Add(func_info);
+            }
+            var methods = type.GetMethods(BindingFlags.Public| BindingFlags.Instance|BindingFlags.Static);
+            foreach (var method in methods)
+            {
+                if (method.IsSpecialName)
+                    continue;
+                CodeFunctionInfo func_info = new CodeFunctionInfo();
+                func_info.ReturnTypeName = GetTypeName(method.ReturnType);
+                func_info.Name = method.Name;
+                if (method.IsGenericMethod)
+                {
+                    var gas=method.GetGenericArguments().Select(it=>it.Name).ToArray();
+                    func_info.Name = $"{method.Name}<{string.Join(",",gas)}>";
+                }
+                func_info.ShortName = method.Name;
+                func_info.IsStatic = method.IsStatic;
+                func_info.IsAbstract = method.IsAbstract;
+                func_info.IsVirtual = method.IsVirtual;
+                var ps = method.GetParameters();
+                func_info.ParamList.AddRange(ps.Select(it => new CodeParamInfo() { Name = it.Name, TypeName = GetTypeName(it.ParameterType)}));
+                CodeFunctionList.Add(func_info);
+            }
+            var pros = type.GetProperties(BindingFlags.Public|BindingFlags.Instance);
+            CodePropertyList.AddRange(pros.Select(it=>new CodePropertyInfo() { Name=it.Name,TypeName=GetTypeName(it.PropertyType), HasGet=it.GetGetMethod(false)!=null,HasSet=it.GetSetMethod(false)!=null,IsStatic=it.GetGetMethod().IsStatic,IsVirtual=it.GetGetMethod().IsVirtual,IsAbstract=it.GetGetMethod().IsAbstract}));
+        }
         public CodeModel(EnvDTE.FileCodeModel codeModel)
         {
             code_model_ = codeModel;
@@ -95,6 +149,7 @@ namespace Tnelab.TneAppMapTool
             {
                 ShortClassName = codeClass.Name;
                 ClassName = codeClass.FullName.Replace($"{this.NamespaceName}.", "");
+                IsAbstract = codeClass.IsAbstract;
                 if (ClassName.IndexOf("<") != -1)
                 {
                     var s = ClassName.IndexOf("<") + 1;
@@ -127,6 +182,7 @@ namespace Tnelab.TneAppMapTool
                         //解析返回值
                         var returnType = codeFunction.Type.AsFullName;
                         func_info.ReturnTypeName = returnType;
+                        func_info.IsStatic = codeFunction.IsShared;
 
                         //解析参数
                         //string parms = "";
@@ -177,6 +233,7 @@ namespace Tnelab.TneAppMapTool
                         {
                             var getter = codeProperty.Getter;
                             property_info.HasGet = getter != null && getter.Access == vsCMAccess.vsCMAccessPublic;
+                            property_info.IsStatic = codeProperty.Getter.IsShared;
                         }
                         catch
                         {
@@ -186,6 +243,7 @@ namespace Tnelab.TneAppMapTool
                         {
                             var setter = codeProperty.Setter;
                             property_info.HasSet = setter != null && setter.Access == vsCMAccess.vsCMAccessPublic;
+                            property_info.IsStatic = codeProperty.Setter.IsShared;
                             foreach (CodeParameter param in setter.Parameters)
                             {
                                 //TextPoint start = param.GetStartPoint();
@@ -235,6 +293,31 @@ namespace Tnelab.TneAppMapTool
             {
                 action(prop_info);
             }
+        }
+        private string GetTypeName(Type type)
+        {
+            if(!type.IsGenericType)
+            {
+                if (type.FullName == null)
+                    return type.Name;
+                else
+                    return type.FullName;
+            }
+            else
+            {
+                string name = null;
+                if (type.FullName != null)
+                {
+                    name = type.FullName;
+                }
+                else
+                {
+                    name = type.Name;
+                }
+                var gas = type.GetGenericArguments();
+                return $"{name.Split('`')[0]}<{string.Join(",", gas.Select(it => GetTypeName(it)))}>";
+            }
+            
         }
     }
 }

@@ -41,7 +41,8 @@ namespace Tnelab.TneAppMapTool
                     if (propInfo.Name != "this")
                     {
                         strBuilder.AppendLine($"\t\t@Tnelab.InvokeInfo(undefined,\"{propInfo.TypeName}\")");
-                        strBuilder.AppendLine($"\t\tpublic set {propInfo.Name}(value:{GetJsTypeNameByTypeName(propInfo.TypeName)}) {{ }}");
+                        var staticFlag = propInfo.IsStatic ? "static" : "";
+                        strBuilder.AppendLine($"\t\tpublic {staticFlag} set {propInfo.Name}(value:{GetJsTypeNameByTypeName(propInfo.TypeName)}) {{ }}");
                     }
                     else
                     {
@@ -51,13 +52,17 @@ namespace Tnelab.TneAppMapTool
                 if (propInfo.HasGet)
                 {
                     if (propInfo.Name != "this")
-                        strBuilder.AppendLine($"\t\tpublic get {propInfo.Name}():{GetJsTypeNameByTypeName(propInfo.TypeName)} {{ return undefined; }}");
+                    {
+                        var staticFlag = propInfo.IsStatic ? "static" : "";
+                        strBuilder.AppendLine($"\t\tpublic {staticFlag} get {propInfo.Name}():{GetJsTypeNameByTypeName(propInfo.TypeName)} {{ return undefined; }}");
+                    }
                 }
             });
             codeModel.ProcessFunction((funcInfoList) => {
                 if (funcInfoList.Count > 1)
                 {
                     var invokeInfoList = new List<string>();
+                    bool isStatic = false;
                     foreach (var funcInfo in funcInfoList)
                     {
                         if (funcInfo.ParamList.Count != 0)
@@ -73,10 +78,14 @@ namespace Tnelab.TneAppMapTool
                         {
                             funcInfo.ParamList.Insert(1, new CodeParamInfo() { Name = "tneMapGenericTypeInfo", TypeName = "System.String" });
                         }
-                        strBuilder.AppendLine($"\t\tpublic {funcInfo.Name}({string.Join(",", funcInfo.ParamList.Select(it => $"{it.Name}:{GetJsTypeNameByTypeName(it.TypeName, codeModel.GenericTypeArguments, funcInfo.GenericTypeArguments)}"))}):{GetJsTypeNameByTypeName(funcInfo.ReturnTypeName, codeModel.GenericTypeArguments, funcInfo.GenericTypeArguments)};");
+                        var staticFlag = funcInfo.IsStatic ? "static" : "";
+                        if(!isStatic)
+                            isStatic = funcInfo.IsStatic;
+                        strBuilder.AppendLine($"\t\tpublic {staticFlag} {funcInfo.Name}({string.Join(",", funcInfo.ParamList.Select(it => $"_{it.Name}:{GetJsTypeNameByTypeName(it.TypeName, codeModel.GenericTypeArguments, funcInfo.GenericTypeArguments)}"))}):{GetJsTypeNameByTypeName(funcInfo.ReturnTypeName, codeModel.GenericTypeArguments, funcInfo.GenericTypeArguments)};");
                     }
                     strBuilder.AppendLine(String.Join("\r\n", invokeInfoList.Select(it => $"\t\t{it}").ToArray()));
-                    strBuilder.AppendLine($"\t\tpublic {funcInfoList[0].ShortName}(tneMapId:number):any{{}}");
+                    var staticFlag2 = isStatic ? "static" : "";
+                    strBuilder.AppendLine($"\t\tpublic {staticFlag2} {funcInfoList[0].ShortName}(tneMapId:number):any{{}}");
                 }
                 else
                 {
@@ -93,7 +102,8 @@ namespace Tnelab.TneAppMapTool
                     {
                         funcInfo.ParamList.Insert(0, new CodeParamInfo() { Name = "tneMapGenericTypeInfo", TypeName = "System.String" });
                     }
-                    strBuilder.AppendLine($"\t\tpublic {funcInfo.Name}({string.Join(",", funcInfo.ParamList.Select(it => $"{it.Name}:{GetJsTypeNameByTypeName(it.TypeName, codeModel.GenericTypeArguments, funcInfo.GenericTypeArguments)}"))}):{GetJsTypeNameByTypeName(funcInfo.ReturnTypeName, codeModel.GenericTypeArguments, funcInfo.GenericTypeArguments)} {(funcInfo.ReturnTypeName == "System.Void" ? "{}" : "{return undefined;}")}");
+                    var staticFlag = funcInfo.IsStatic ? "static" : "";
+                    strBuilder.AppendLine($"\t\tpublic {staticFlag} {funcInfo.Name}({string.Join(",", funcInfo.ParamList.Select(it => $"_{it.Name}:{GetJsTypeNameByTypeName(it.TypeName, codeModel.GenericTypeArguments, funcInfo.GenericTypeArguments)}"))}):{GetJsTypeNameByTypeName(funcInfo.ReturnTypeName, codeModel.GenericTypeArguments, funcInfo.GenericTypeArguments)} {(funcInfo.ReturnTypeName == "System.Void" ? "{}" : "{return undefined;}")}");
                 }
             });
             if (codeModel.CodeConstructorList.Count > 1)
@@ -105,9 +115,9 @@ namespace Tnelab.TneAppMapTool
                     {
                         funcInfo.ParamList.Insert(1, new CodeParamInfo() { Name = "tneMapGenericTypeInfo", TypeName = "System.String" });
                     }
-                    strBuilder.AppendLine($"\t\tpublic constructor({string.Join(",", funcInfo.ParamList.Select(it => $"{it.Name}:{GetJsTypeNameByTypeName(it.TypeName, codeModel.GenericTypeArguments, funcInfo.GenericTypeArguments)}"))});");
+                    strBuilder.AppendLine($"\t\tpublic constructor({string.Join(",", funcInfo.ParamList.Select(it => $"_{it.Name}:{GetJsTypeNameByTypeName(it.TypeName, codeModel.GenericTypeArguments, funcInfo.GenericTypeArguments)}"))});");
                 }
-                strBuilder.AppendLine($"\t\tpublic constructor(...arg: any[]){{super(...arg);}}");
+                strBuilder.AppendLine($"\t\tpublic constructor(...arg: any[]){{super(arguments);}}");
             }
             else if(codeModel.CodeConstructorList.Count==1)
             {
@@ -116,7 +126,7 @@ namespace Tnelab.TneAppMapTool
                 {
                     funcInfo.ParamList.Insert(0, new CodeParamInfo() { Name = "tneMapGenericTypeInfo", TypeName = "System.String" });
                 }
-                strBuilder.AppendLine($"\t\tpublic constructor({string.Join(",", funcInfo.ParamList.Select(it => $"{it.Name}:{GetJsTypeNameByTypeName(it.TypeName, codeModel.GenericTypeArguments, funcInfo.GenericTypeArguments)}"))}) {{super(arguments);}}");
+                strBuilder.AppendLine($"\t\tpublic constructor({string.Join(",", funcInfo.ParamList.Select(it => $"_{it.Name}:{GetJsTypeNameByTypeName(it.TypeName, codeModel.GenericTypeArguments, funcInfo.GenericTypeArguments)}"))}) {{super(arguments);}}");
             }
             strBuilder.AppendLine("\t}");
             strBuilder.AppendLine("}");
@@ -124,6 +134,10 @@ namespace Tnelab.TneAppMapTool
         }
         static string GetJsTypeNameByTypeName(string tName, List<string> classGenericTypeArguments = null, List<string> funcGenericTypeArguments = null)
         {
+            if(tName==null)
+            {
+
+            }
             tName = tName.Trim();
             if (funcGenericTypeArguments != null && funcGenericTypeArguments.Count != 0)
             {
