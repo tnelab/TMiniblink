@@ -129,15 +129,12 @@ namespace Tnelab.TneAppMapTool
                 strBuilder.AppendLine($"\t\tpublic constructor({string.Join(",", funcInfo.ParamList.Select(it => $"_{it.Name}:{GetJsTypeNameByTypeName(it.TypeName, codeModel.GenericTypeArguments, funcInfo.GenericTypeArguments)}"))}) {{super(arguments);}}");
             }
             strBuilder.AppendLine("\t}");
+            strBuilder.AppendLine($"\tTnelab.RegisterNativeMapAsync(\"{codeModel.NamespaceName}.{codeModel.ClassName}\",\"{theNamespace}.{codeModel.ClassName}\");");
             strBuilder.AppendLine("}");
             return strBuilder.ToString();
         }
         static string GetJsTypeNameByTypeName(string tName, List<string> classGenericTypeArguments = null, List<string> funcGenericTypeArguments = null)
         {
-            if(tName==null)
-            {
-
-            }
             tName = tName.Trim();
             if (funcGenericTypeArguments != null && funcGenericTypeArguments.Count != 0)
             {

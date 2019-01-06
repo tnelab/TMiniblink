@@ -283,7 +283,18 @@ namespace Tnelab.TneAppMapTool
             var group = CodeFunctionList.GroupBy(it => it.ShortName);
             foreach (var item in group)
             {
-                action(item.ToList());
+                var group2 = item.GroupBy(it => it.IsStatic);
+                if (group2.Count() != 1)
+                {
+                    var list = group2.ToList();
+                    action(list[0].ToList());
+                    var funcList = list[1].ToList().Select(it => { it.Name += "_";return it; });
+                    action(funcList.ToList());
+                }
+                else
+                {
+                    action(item.ToList());
+                }
             }
         }
         //处理公有属性
