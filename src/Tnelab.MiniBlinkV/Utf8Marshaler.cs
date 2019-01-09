@@ -2,64 +2,86 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Linq;
 
 namespace Tnelab.MiniBlinkV
 {
-    class Utf8Marshaler : ICustomMarshaler
+    public class Utf8Marshaler : ICustomMarshaler
     {
-        int size_ = 0;
-        public void CleanUpManagedData(object ManagedObj)
+        static Utf8Marshaler static_instance;
+
+        public IntPtr MarshalManagedToNative(object managedObj)
         {
-            
+            if (managedObj == null)
+                return IntPtr.Zero;
+            if (!(managedObj is string))
+                throw new MarshalDirectiveException(
+                       "UTF8Marshaler must be used on a string.");
+
+            // not null terminated
+            byte[] strbuf = Encoding.UTF8.GetBytes((string)managedObj);
+            IntPtr buffer = Marshal.AllocHGlobal(strbuf.Length + 1);
+            Marshal.Copy(strbuf, 0, buffer, strbuf.Length);
+
+            // write the terminating null
+            Marshal.WriteByte(buffer + strbuf.Length, 0);
+            lock (ptrListLock_)
+            {
+                ptrList_.Add(buffer);
+            }
+            return buffer;
         }
-        object ptrLock_ = new object();
+
+        public unsafe object MarshalNativeToManaged(IntPtr pNativeData)
+        {
+            byte* walk = (byte*)pNativeData;
+
+            // find the end of the string
+            while (*walk != 0)
+            {
+                walk++;
+            }
+            int length = (int)(walk - (byte*)pNativeData);
+
+            // should not be null terminated
+            byte[] strbuf = new byte[length];
+            // skip the trailing null
+            Marshal.Copy((IntPtr)pNativeData, strbuf, 0, length);
+            string data = Encoding.UTF8.GetString(strbuf);
+            return data;
+        }
+
         public void CleanUpNativeData(IntPtr pNativeData)
         {
-            lock (ptrLock_)
-            {
-                if(ptr_.ToInt64()!=pNativeData.ToInt64()&&ptr_!=IntPtr.Zero)
-                {
-                    Marshal.FreeHGlobal(ptr_);
-                }
-                this.size_ = 0;
-            }
+            //IntPtr ptr = IntPtr.Zero;
+            //lock (ptrListLock_)
+            //{
+            //    ptr = ptrList_.SingleOrDefault(it => it.ToInt64() == pNativeData.ToInt64());
+            //    if (ptr != IntPtr.Zero)
+            //    {
+            //        Marshal.FreeHGlobal(pNativeData);
+            //        ptrList_.Remove(ptr);
+            //    }
+            //}            
+        }
+
+        public void CleanUpManagedData(object managedObj)
+        {
         }
 
         public int GetNativeDataSize()
         {
-            return this.size_;
+            return -1;
         }
-        IntPtr ptr_ = IntPtr.Zero;
-        public IntPtr MarshalManagedToNative(object ManagedObj)
-        {
-            lock (ptrLock_)
-            {
-                var datas = Encoding.UTF8.GetBytes(ManagedObj.ToString() + "\0");
-                var ptr = Marshal.AllocHGlobal(datas.Length);
-                Marshal.Copy(datas, 0, ptr, datas.Length);
-                ptr_ = ptr;
-                this.size_ = datas.Length;
-                return ptr;
-            }
-        }
-
-        public object MarshalNativeToManaged(IntPtr pNativeData)
-        {
-            List<byte> datas = new List<byte>();
-            byte b = Marshal.ReadByte(pNativeData);
-            while (b != 0)
-            {
-                datas.Add(b);
-                pNativeData = pNativeData + 1;
-                b = Marshal.ReadByte(pNativeData);
-            }
-            size_ = datas.Count;
-            var str = Encoding.UTF8.GetString(datas.ToArray());
-            return str;
-        }
+        static readonly List<IntPtr> ptrList_ = new List<IntPtr>();
+        static readonly object ptrListLock_=new Object();
         public static ICustomMarshaler GetInstance(string cookie)
         {
-            return new Utf8Marshaler();
+            if (static_instance == null)
+            {
+                return static_instance = new Utf8Marshaler();
+            }
+            return static_instance;
         }
     }
 }

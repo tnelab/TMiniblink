@@ -991,7 +991,7 @@ namespace Tnelab.MiniBlink
         [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
         public extern static wkeRect wkeGetCaretRect(wkeWebView webView);
         [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, BestFitMapping = false, ThrowOnUnmappableChar = true)]
-        public extern static jsValue wkeRunJS(wkeWebView webView, [MarshalAs(UnmanagedType.LPStr)]string script);
+        public extern static jsValue wkeRunJS(wkeWebView webView, [MarshalAs(UnmanagedType.CustomMarshaler,MarshalTypeRef =typeof(MiniBlinkV.Utf8Marshaler))]string script);
         [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
         public extern static jsValue wkeRunJSW(wkeWebView webView, string script);
         [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
@@ -1272,10 +1272,10 @@ namespace Tnelab.MiniBlink
         [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
         public extern static jsType jsTypeOf(jsValue v);
         [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
-        [return: MarshalAs(UnmanagedType.Bool)]
+        [return: MarshalAs(UnmanagedType.I1)]
         public extern static bool jsIsNumber(jsValue v);
         [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
-        [return: MarshalAs(UnmanagedType.Bool)]
+        [return: MarshalAs(UnmanagedType.I1)]
         public extern static bool jsIsString(jsValue v);
         [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -1287,6 +1287,7 @@ namespace Tnelab.MiniBlink
         [return: MarshalAs(UnmanagedType.Bool)]
         public extern static bool jsIsFunction(jsValue v);
         [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
         public extern static bool jsIsUndefined(jsValue v);
         [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.Bool)]
