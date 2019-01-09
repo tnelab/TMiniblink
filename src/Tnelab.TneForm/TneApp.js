@@ -12,8 +12,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+let ThisForm;
 var Tnelab;
 (function (Tnelab) {
+    let TM = Tnelab;
     /*////////////////////////////////////////////////////////////////////////说明
     基本概念：
     本机对象：指的是c#对象
@@ -34,10 +36,11 @@ var Tnelab;
     })(TneQueryId || (TneQueryId = {}));
     ;
     let GcMap = new Map();
+    //垃圾回收支持结构
     function OnSetGC(id, gc) {
         GcMap.set(id, gc);
     }
-    Tnelab.OnSetGC = OnSetGC;
+    TM.OnSetGC = OnSetGC;
     function OnGetGC(id) {
         let gc = undefined;
         if (GcMap.has(id)) {
@@ -46,7 +49,7 @@ var Tnelab;
         }
         return gc;
     }
-    Tnelab.OnGetGC = OnGetGC;
+    TM.OnGetGC = OnGetGC;
     //本机调用,用于序列化RunJs的调用结果为JSON
     class OnCallJsInfo {
     }
@@ -66,13 +69,13 @@ var Tnelab;
         }
         return result;
     }
-    Tnelab.OnCallJs = OnCallJs;
+    TM.OnCallJs = OnCallJs;
     //js通讯回调
     function OnResponse(msgId, response) {
         response = unescape(response);
         return response;
     }
-    Tnelab.OnResponse = OnResponse;
+    TM.OnResponse = OnResponse;
     //js通道异步封装
     function TneQueryAsync(msgId, request) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -113,6 +116,7 @@ var Tnelab;
         });
     }
     Tnelab.RunFunctionForTneForm = RunFunctionForTneForm;
+    TM.RunFunctionForTneForm = RunFunctionForTneForm;
     //var JsFunctionMap: Map<number, Function> = new Map<number, Function>();
     /////////////////////////////////////////////////////////////////////////JsNativeMap
     //装饰器，用于修饰本机映射
@@ -228,7 +232,7 @@ var Tnelab;
     //一个本机对象描述
     class NativeObjectInfo {
     }
-    Tnelab.NativeObjectInfo = NativeObjectInfo;
+    TM.NativeObjectInfo = NativeObjectInfo;
     //映射结果描述
     class MapResult {
     }
@@ -723,6 +727,8 @@ var Tnelab;
     }
     NativeObject.TypeList = new Array();
     Tnelab.NativeObject = NativeObject;
+    /////////////////////////////////////////////////////////////////////////////////ThisForm
+    //自动定义当前窗口的本机id，可以用该ID随时构造出当前窗口本机对象的js同步对象    
     let dom_ready_ = function () {
         return __awaiter(this, void 0, void 0, function* () {
             document.removeEventListener("DOMContentLoaded", dom_ready_, false);
@@ -730,8 +736,8 @@ var Tnelab;
             let no = new NativeObjectInfo();
             no.Id = parseInt(hashCode);
             no.GenericInfo = "";
-            let proxy = Tnelab.TneForm;
-            Tnelab.ThisForm = yield new proxy(no).Ready();
+            let proxy = TMiniblink.TneForm;
+            ThisForm = yield new proxy(no).Ready();
         });
     };
     document.addEventListener("DOMContentLoaded", dom_ready_, true);
@@ -752,8 +758,8 @@ var Tnelab;
 //此代码由机器生成，请不要手动修改
 ///<reference path="./TneMap.ts"/>
 ///<reference path="./TneFormBase.ts"/>
-var Tnelab;
-(function (Tnelab) {
+var TMiniblink;
+(function (TMiniblink) {
     let TneForm = class TneForm extends Tnelab.TneFormBase {
         constructor() { super(arguments); }
         get DragFilesEvent() { return undefined; }
@@ -884,9 +890,9 @@ var Tnelab;
     ], TneForm, "ReferenceEquals", null);
     TneForm = __decorate([
         Tnelab.ConstructorInfo(),
-        Tnelab.ToMap("Tnelab.TneForm", "Tnelab.HtmlView.TneForm")
+        Tnelab.ToMap("TMiniblink.TneForm", "Tnelab.HtmlView.TneForm")
     ], TneForm);
-    Tnelab.TneForm = TneForm;
-    Tnelab.RegisterNativeMapAsync("Tnelab.HtmlView.TneForm", "Tnelab.TneForm");
-})(Tnelab || (Tnelab = {}));
+    TMiniblink.TneForm = TneForm;
+    Tnelab.RegisterNativeMapAsync("Tnelab.HtmlView.TneForm", "TMiniblink.TneForm");
+})(TMiniblink || (TMiniblink = {}));
 //# sourceMappingURL=TneApp.js.map

@@ -1,8 +1,5 @@
+declare let ThisForm: TMiniblink.TneForm;
 declare namespace Tnelab {
-    function OnSetGC(id: number, gc: object): void;
-    function OnGetGC(id: number): any;
-    function OnCallJs(args: any): any;
-    function OnResponse(msgId: number, response: string): string;
     function RegisterNativeMapAsync(nativeTypeName: any, jsTypeName: any): Promise<void>;
     function RunFunctionForTneForm(theTneForm: TneFormBase, json: string, func: (json: string) => Promise<string>): Promise<string>;
     function InvokeInfo(nativeName: string, ...args: string[]): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
@@ -21,13 +18,6 @@ declare namespace Tnelab {
     }
     function ToMap(jsTypePath: string, nativeTypePath: string): (target: Function) => void;
     function ConstructorInfo(...args: string[]): (target: Function) => void;
-    class NativeObjectInfo {
-        Id: number;
-        Path: string;
-        GenericInfo: string;
-        GcInfo: string;
-        GCObject: object;
-    }
     class TneEvent {
         private nativeObjectId_;
         private name_;
@@ -48,7 +38,6 @@ declare namespace Tnelab {
         static Build(mapInfo: JsMapInfo): Promise<void>;
         static TypeList: Array<string>;
     }
-    let ThisForm: TneForm;
 }
 declare namespace Tnelab {
     class TneFormBase extends NativeObject {
@@ -56,7 +45,7 @@ declare namespace Tnelab {
         RunFunc(func: (json: string) => Promise<string>, json: string): any;
     }
 }
-declare namespace Tnelab {
+declare namespace TMiniblink {
     class TneForm extends Tnelab.TneFormBase {
         readonly DragFilesEvent: Tnelab.TneEvent;
         readonly Handle: any;

@@ -9,16 +9,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var BLL;
 (function (BLL) {
     let SimpleTestService = class SimpleTestService extends Tnelab.NativeObject {
+        constructor() { super(arguments); }
         set Name(value) { }
         get Name() { return undefined; }
         set Age(value) { }
         get Age() { return undefined; }
-        Add(x, y) { return undefined; }
-        GetMessage(msg) { return undefined; }
-        Equals(tneMapId) { }
+        Add(_x, _y) { return undefined; }
+        static GetMessage(_msg) { return undefined; }
+        Equals(_obj) { return undefined; }
+        static Equals_(_objA, _objB) { return undefined; }
         GetHashCode() { return undefined; }
         GetType() { return undefined; }
-        ReferenceEquals(objA, objB) { return undefined; }
+        static ReferenceEquals(_objA, _objB) { return undefined; }
         ToString() { return undefined; }
     };
     __decorate([
@@ -31,10 +33,6 @@ var BLL;
         Tnelab.InvokeInfo("Add", "System.Int32", "System.Int32")
     ], SimpleTestService.prototype, "Add", null);
     __decorate([
-        Tnelab.InvokeInfo("GetMessage", "System.String")
-    ], SimpleTestService.prototype, "GetMessage", null);
-    __decorate([
-        Tnelab.InvokeInfo("Equals", "System.Object", "System.Object"),
         Tnelab.InvokeInfo("Equals", "System.Object")
     ], SimpleTestService.prototype, "Equals", null);
     __decorate([
@@ -44,13 +42,20 @@ var BLL;
         Tnelab.InvokeInfo("GetType")
     ], SimpleTestService.prototype, "GetType", null);
     __decorate([
-        Tnelab.InvokeInfo("ReferenceEquals", "System.Object", "System.Object")
-    ], SimpleTestService.prototype, "ReferenceEquals", null);
-    __decorate([
         Tnelab.InvokeInfo("ToString")
     ], SimpleTestService.prototype, "ToString", null);
+    __decorate([
+        Tnelab.InvokeInfo("GetMessage", "System.String")
+    ], SimpleTestService, "GetMessage", null);
+    __decorate([
+        Tnelab.InvokeInfo("Equals_", "System.Object", "System.Object")
+    ], SimpleTestService, "Equals_", null);
+    __decorate([
+        Tnelab.InvokeInfo("ReferenceEquals", "System.Object", "System.Object")
+    ], SimpleTestService, "ReferenceEquals", null);
     SimpleTestService = __decorate([
         Tnelab.ToMap("BLL.SimpleTestService", "Tnelab.TneForm.Test.BLL.SimpleTestService")
     ], SimpleTestService);
     BLL.SimpleTestService = SimpleTestService;
+    Tnelab.RegisterNativeMapAsync("Tnelab.TneForm.Test.BLL.SimpleTestService", "BLL.SimpleTestService");
 })(BLL || (BLL = {}));

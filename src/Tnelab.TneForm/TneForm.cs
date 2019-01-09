@@ -1,5 +1,5 @@
 ﻿//tne://to_ts
-//namespace:Tnelab
+//namespace:TMiniblink
 //base:Tnelab.TneFormBase
 //import:./TneMap.ts
 //import:./TneFormBase.ts

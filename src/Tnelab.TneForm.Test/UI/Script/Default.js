@@ -14,9 +14,8 @@ let eventTest = function (sender, args) {
 function InvokeTest() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            newForm = yield new Tnelab.TneForm().Ready();
+            newForm = yield new TMiniblink.TneForm().Ready();
             yield (newForm.Url = "Tne://Tnelab.TneForm.Test/ui/default.html?cmd=测试");
-            yield (newForm.TopMost = true);
             yield newForm.Show();
         }
         catch (error) {
@@ -26,13 +25,13 @@ function InvokeTest() {
 }
 function callOtherForm() {
     return __awaiter(this, void 0, void 0, function* () {
-        let event = yield Tnelab.ThisForm.DragFilesEvent;
+        let event = yield ThisForm.DragFilesEvent;
         yield event.RemoveListener(eventTest);
         alert("HI2");
     });
 }
 function showId() {
     return __awaiter(this, void 0, void 0, function* () {
-        alert(Tnelab.ThisForm.TneMapNativeObjectId);
+        alert(ThisForm.TneMapNativeObjectId);
     });
 }

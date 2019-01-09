@@ -9,9 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 ///<reference path="../../../Tnelab.TneForm/TneApp.d.ts"/>
 function MaxWindow(elm) {
     return __awaiter(this, void 0, void 0, function* () {
-        let old = yield Tnelab.ThisForm.WindowState;
+        let old = yield ThisForm.WindowState;
         let state = old === 1 ? 2 : 1;
-        yield (Tnelab.ThisForm.WindowState = state);
+        yield (ThisForm.WindowState = state);
         if (state === 1) {
             elm.innerText = "恢复";
         }
@@ -22,13 +22,13 @@ function MaxWindow(elm) {
 }
 function MiniWindow() {
     return __awaiter(this, void 0, void 0, function* () {
-        yield (Tnelab.ThisForm.WindowState = 3);
+        yield (ThisForm.WindowState = 3);
     });
 }
 function MoveWindow() {
     return __awaiter(this, void 0, void 0, function* () {
         var maxButton = document.getElementById("MaxButton");
         maxButton.innerText = "最大化";
-        Tnelab.ThisForm.Move();
+        ThisForm.Move();
     });
 }

@@ -1,4 +1,6 @@
-﻿namespace Tnelab {
+﻿let ThisForm: TMiniblink.TneForm;
+namespace Tnelab {
+    let TM = Tnelab as any;
     /*////////////////////////////////////////////////////////////////////////说明
     基本概念：
     本机对象：指的是c#对象
@@ -13,10 +15,12 @@
     //原始js通讯声明
     declare function mbQuery(msgId: number, request: string, onResponse: (id: number, response: string) => any): void;
     let GcMap = new Map<number, object>();
-    export function OnSetGC(id: number, gc: object) {
+    //垃圾回收支持结构
+    function OnSetGC(id: number, gc: object) {
         GcMap.set(id, gc);
     }
-    export function OnGetGC(id: number) {
+    TM.OnSetGC = OnSetGC;
+    function OnGetGC(id: number) {
         let gc = undefined;
         if (GcMap.has(id)) {
             gc=GcMap.get(id);
@@ -24,12 +28,13 @@
         }
         return gc;
     }
+    TM.OnGetGC = OnGetGC;
     //本机调用,用于序列化RunJs的调用结果为JSON
     class OnCallJsInfo {
         public Status: boolean;
         public Data: any;
     }
-    export function OnCallJs(args: any) {
+    function OnCallJs(args: any) {
         let result;
         try {
             let info = new OnCallJsInfo();
@@ -45,11 +50,13 @@
         }
         return result;
     }
+    TM.OnCallJs = OnCallJs;
     //js通讯回调
-    export function OnResponse(msgId: number, response: string) {
+    function OnResponse(msgId: number, response: string) {
         response = unescape(response);
         return response;
     }
+    TM.OnResponse = OnResponse;
     //js通道异步封装
     async function TneQueryAsync(msgId: number, request: string): Promise<any> {
         return new Promise<any>((resolve, reject) => {
@@ -80,6 +87,7 @@
         let result=await TneQueryAsync(TneQueryId.RunFunctionForTneForm, request);
         return result;
     }
+    TM.RunFunctionForTneForm = RunFunctionForTneForm;
     //var JsFunctionMap: Map<number, Function> = new Map<number, Function>();
     /////////////////////////////////////////////////////////////////////////JsNativeMap
     //装饰器，用于修饰本机映射
@@ -180,13 +188,14 @@
         public NativeTypePath: string;//本机类型路径，常为空
     }
     //一个本机对象描述
-    export class NativeObjectInfo {
+    class NativeObjectInfo {
         public Id: number;//本机对象唯一ID
         public Path: string;//本机类型路径，常为空
         public GenericInfo: string;//泛型信息
         public GcInfo: string;
         public GCObject: object;//垃圾回收对象
     }
+    TM.NativeObjectInfo = NativeObjectInfo;
     //映射结果描述
     class MapResult {
         public Status: boolean;//结果状态false为发生异常,data为则为异常信息描述,true表示调用良好,data表述结果描述
@@ -664,14 +673,13 @@
     }
     /////////////////////////////////////////////////////////////////////////////////ThisForm
     //自动定义当前窗口的本机id，可以用该ID随时构造出当前窗口本机对象的js同步对象    
-    export let ThisForm: TneForm;
     let dom_ready_ = async function () {
         document.removeEventListener("DOMContentLoaded", dom_ready_, false);
         let hashCode = await TneQueryAsync(TneQueryId.GetThisFormHashCode, "GetThisFormHashCode");
         let no = new NativeObjectInfo();
         no.Id = parseInt(hashCode);
         no.GenericInfo = "";
-        let proxy = TneForm as any;
+        let proxy = TMiniblink.TneForm as any;
         ThisForm = await new proxy(no).Ready();
     };
     document.addEventListener("DOMContentLoaded", dom_ready_, true);

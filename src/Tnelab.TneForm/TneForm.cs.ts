@@ -1,9 +1,9 @@
 //此代码由机器生成，请不要手动修改
 ///<reference path="./TneMap.ts"/>
 ///<reference path="./TneFormBase.ts"/>
-namespace Tnelab{
+namespace TMiniblink{
 	@Tnelab.ConstructorInfo()
-	@Tnelab.ToMap("Tnelab.TneForm","Tnelab.HtmlView.TneForm")
+	@Tnelab.ToMap("TMiniblink.TneForm","Tnelab.HtmlView.TneForm")
 	export class TneForm extends Tnelab.TneFormBase {
 		@Tnelab.IsEvent("System.EventHandler<Tnelab.HtmlView.DragFilesEventArgs>")
 		public  get DragFilesEvent():Tnelab.TneEvent{ return undefined; }
@@ -78,5 +78,5 @@ namespace Tnelab{
 		public  ToString():string {return undefined;}
 		public constructor() {super(arguments);}
 	}
-	Tnelab.RegisterNativeMapAsync("Tnelab.HtmlView.TneForm","Tnelab.TneForm");
+	Tnelab.RegisterNativeMapAsync("Tnelab.HtmlView.TneForm","TMiniblink.TneForm");
 }
