@@ -1,32 +1,23 @@
 ﻿///<reference path="../../../Tnelab.TneForm.Test.BLL/SimpleTestService.cs.ts"/>
 let newForm: Tnelab.TneForm;
+let eventTest = function (sender, args) {
+    alert(args.Files.join(",") + ":X:" + args.X + ":Y:" + args.Y);
+}
 async function InvokeTest() {
     try {
-        //var simple = await new BLL.SimpleTestService().Ready();
         newForm = await new Tnelab.TneForm().Ready();
         await (newForm.Url = "Tne://Tnelab.TneForm.Test/ui/default.html?cmd=测试");
-        await (newForm.Parent = Tnelab.ThisForm);
-        await newForm.ShowDialog();
-        //var t = await newForm.RunFunc(function () {
-        //    var win = window as any;
-        //    win.MiniWindow();
-        //    return "";
-        //});
+        await (newForm.TopMost = true);
+        await newForm.Show();
     }
     catch (error) {
         console.log(error);
     }
 }
 async function callOtherForm() {
-    let result = await newForm.RunFunc(async function () {
-        try {
-            await MiniWindow();
-        }
-        catch (error) {
-            alert(error);
-        }
-        return undefined;
-    });
+    let event = await Tnelab.ThisForm.DragFilesEvent;
+    await event.RemoveListener(eventTest);
+    alert("HI2");
 }
 async function showId() {
     alert(Tnelab.ThisForm.TneMapNativeObjectId);

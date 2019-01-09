@@ -58,9 +58,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="TneApp.d.ts">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="TneApp.js.map">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <ApplicationIcon />
+    <ApplicationIcon></ApplicationIcon>
     <StartupObject>Tnelab.HtmlView.Test.Program</StartupObject>
     <TypeScriptToolsVersion>3.1</TypeScriptToolsVersion>
     <Platforms>AnyCPU</Platforms>

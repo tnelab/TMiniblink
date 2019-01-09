@@ -17,8 +17,9 @@ namespace Tnelab.HtmlView
     public enum StartPosition { Manual=1, CenterScreen=2, CenterParent=3 }
     public enum WindowState { Maximized=1, Normal=2 , Minimized=3 }
     public sealed class TneForm
-    {        
+    {                
         public IntPtr Handle { get; internal set; }
+        public event EventHandler<DragFilesEventArgs> DragFilesEvent;
         string title_ = "TneForm";
         public string Title {
             get {
@@ -132,6 +133,29 @@ namespace Tnelab.HtmlView
                 }
             }
         }
+        bool topMost_ = false;
+        public bool TopMost
+        {
+            get
+            {
+                return this.topMost_;
+            }
+            set
+            {
+                this.topMost_ = value;
+                if (this.Handle != IntPtr.Zero)
+                {
+                    if (this.topMost_)
+                    {
+                        NativeMethods.SetWindowPos(this.Handle, new IntPtr(-1), 0, 0, 0, 0, 0x0002 | 0x0001);
+                    }
+                    else
+                    {
+                        NativeMethods.SetWindowPos(this.Handle, new IntPtr(-2), 0, 0, 0, 0, 0x0002 | 0x0001);
+                    }
+                }
+            }
+        }
         public int MinWidth { get; set; } = 0;
         public int MinHeight { get; set; } = 0;
         string url_;
@@ -196,8 +220,10 @@ namespace Tnelab.HtmlView
                     throw new Exception("窗口已经被释放");
                 if (this.Handle == IntPtr.Zero)
                     throw new Exception("窗口还为创建");
-                NativeMethods.CloseWindow(this.Handle);
-                NativeMethods.DestroyWindow(this.Handle);
+                //NativeMethods.CloseWindow(this.Handle);
+                //NativeMethods.DestroyWindow(this.Handle);
+                this.WebBrowser.Destroy();
+                NativeMethods.PostMessageW(this.Handle, NativeMethods.WM_CLOSE, 0, 0);
             });
         }
         bool isStartDialog_ = false;
@@ -236,12 +262,29 @@ namespace Tnelab.HtmlView
         }
         public void Move()
         {
-            WindowState_ = WindowState.Normal;
+            //WindowState_ = WindowState.Normal;
             if (this.Handle == IntPtr.Zero)
                 CreateWindow();
             NativeMethods.ReleaseCapture();
             NativeMethods.PostMessageW(this.Handle, NativeMethods.WM_SYSCOMMAND, NativeMethods.SC_MOVE | NativeMethods.HTCAPTION, 0);
         }
+        bool allowDrop_ = false;
+        public bool AllowDrop
+        {
+            get
+            {
+                return allowDrop_;
+            }
+            set
+            {
+                allowDrop_ = value;
+                if (this.Handle != IntPtr.Zero)
+                {
+                    NativeMethods.DragAcceptFiles(this.Handle, value);
+                }
+            }
+        }
+
         string icon_;
         public string Icon
         {
@@ -332,6 +375,28 @@ namespace Tnelab.HtmlView
                         result = NativeMethods.DefWindowProcW(hWnd, message, wParam, lParam);
                     this.IsDesdroyed_ = true;
                     break;
+                case NativeMethods.WM_DROPFILES:
+                    if (this.DragFilesEvent != null)
+                    {
+                        var args = new DragFilesEventArgs();
+                        var hDrag = new IntPtr(wParam);
+                        var count = NativeMethods.DragQueryFileW(hDrag, 0xFFFFFFFF, IntPtr.Zero, 0);
+                        args.Files = new string[count];
+                        var tmp = Marshal.AllocHGlobal(255*2);
+                        for (var i = 0; i < args.Files.Length; i++)
+                        {
+                            NativeMethods.DragQueryFileW(hDrag, (uint)i, tmp, 255*2);
+                            args.Files[i] = Marshal.PtrToStringUni(tmp);
+                        }
+                        Marshal.FreeHGlobal(tmp);
+                        NativeMethods.POINT point = new NativeMethods.POINT();
+                        NativeMethods.DragQueryPoint(hDrag, ref point);
+                        args.X = point.x;
+                        args.Y = point.y;
+                        this.DragFilesEvent(this, args);
+                        NativeMethods.DragFinish(hDrag);
+                    }
+                    break;
                 default:
                     result = NativeMethods.DefWindowProcW(hWnd, message, wParam, lParam);
                     break;
@@ -408,8 +473,10 @@ namespace Tnelab.HtmlView
                 {
                     throw new Exception($"创建窗口失败,错误代码:{Marshal.GetLastWin32Error()}");
                 }
+                NativeMethods.DragAcceptFiles(result, this.AllowDrop);
                 if (WebBrowser == null)
                 {
+                    
                     TneApplication.ReadOnlyVipFlag = true;
                     if (TneApplication.IsVip)
                     {
@@ -426,8 +493,9 @@ namespace Tnelab.HtmlView
                     };
 
                     this.Url = this.Url;
-                }
+                }                
                 this.Handle = result;
+                this.TopMost = this.TopMost;
             });
         }
         int GetBorderRect(uint lParam)
@@ -515,5 +583,11 @@ namespace Tnelab.HtmlView
             }
             JsNativeMaper.This.RemoveBrowser(this.WebBrowser);
         }
+    }
+    public class DragFilesEventArgs : EventArgs
+    {
+        public string[] Files { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
     }
 }

@@ -16,6 +16,14 @@
     export function OnSetGC(id: number, gc: object) {
         GcMap.set(id, gc);
     }
+    export function OnGetGC(id: number) {
+        let gc = undefined;
+        if (GcMap.has(id)) {
+            gc=GcMap.get(id);
+            GcMap.delete(id);
+        }
+        return gc;
+    }
     //本机调用,用于序列化RunJs的调用结果为JSON
     class OnCallJsInfo {
         public Status: boolean;
@@ -57,7 +65,7 @@
         return await TneQueryAsync(TneQueryId.NativeMap, json);
     }
     //类型映射注册通道
-    async function RegisterNativeMapAsync(nativeTypeName, jsTypeName): Promise<void> {
+    export async function RegisterNativeMapAsync(nativeTypeName, jsTypeName): Promise<void> {
         let args = { NativeTypeName: nativeTypeName, JsTypeName: jsTypeName };
         await TneQueryAsync(TneQueryId.RegisterNativeMap, JSON.stringify(args));
     }
@@ -90,6 +98,14 @@
                 }
                 descriptor.value["NativeName"].push(nativeName);
                 descriptor.value["ArgsTypes"].push(args);
+            }
+        }
+    }
+    //装饰器，事件
+    export function IsEvent(type: string) {
+        return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+            if (descriptor.get != undefined) {
+                descriptor.get["IsEvent"] = type;
             }
         }
     }
@@ -154,7 +170,7 @@
         };
     }
     //调用类型
-    enum MapAction { Create = 1, SetAccess = 2, GetAccess = 3, StaticInvoke = 4, InstanceInvoke = 5 }
+    enum MapAction { Create = 1, SetAccess = 2, GetAccess = 3, StaticInvoke = 4, InstanceInvoke = 5, TneEventAddListener = 6, TneEventRemoveListener=7}
     //调用传递的参数类型描述，非本机或js类型，表示的是数据的元信息
     enum MapDataType { NativeObjectId = 1/*表示本机对象ID*/, Value = 2/*标识一个原生值*/, FunctionId = 3 /*表示数据为一个js函数*/ };
     //调用传递的数据描述
@@ -164,7 +180,7 @@
         public NativeTypePath: string;//本机类型路径，常为空
     }
     //一个本机对象描述
-    class NativeObjectInfo {
+    export class NativeObjectInfo {
         public Id: number;//本机对象唯一ID
         public Path: string;//本机类型路径，常为空
         public GenericInfo: string;//泛型信息
@@ -209,7 +225,21 @@
         public Id: Number;
         public Name: string;
         public Args: Array<MapDataInfo> = new Array<MapDataInfo>();
-    }
+    }    
+    //添加事件侦听器
+    class MapTneEventAddListenerActionInfo {
+        public Action: MapAction = MapAction.TneEventAddListener;
+        public Id: Number;
+        public Name: string;
+        public Args: Array<MapDataInfo> = new Array<MapDataInfo>();
+    }  
+    //移除事件侦听器
+    class MapTneEventRemoveListenerActionInfo {
+        public Action: MapAction = MapAction.TneEventRemoveListener;
+        public Id: Number;
+        public Name: string;
+        public Args: Array<MapDataInfo> = new Array<MapDataInfo>();
+    }  
     //核心映射器，此类处理所有映射操作js部分
     class NativeMapper {
         //调用本机构造函数
@@ -316,7 +346,14 @@
                 if (mapInfo.Action != MapAction.Create && result.Data.DataType === MapDataType.NativeObjectId) {
                     let nativeTypeName = result.Data.Value.Path;
                     let jsMapInfo = JsMapInfo.GetMapInfoByNativeTypePath(nativeTypeName);
-                    let r = await new jsMapInfo.JsType.prototype.constructor(result.Data.Value).Ready();
+                    let no = new NativeObjectInfo();
+                    no.Id = result.Data.Value.Id;
+                    no.GenericInfo = result.Data.Value.GenericInfo;
+                    no.Path = result.Data.Value.Path;
+                    let rx = new jsMapInfo.JsType.prototype.constructor(no);
+                    let r = await rx.Ready();
+                    r.TneMapGcObject_ = GcMap.get(r.TneMapNativeObjectId);
+                    GcMap.delete(r.TneMapNativeObjectId);
                     //let r = eval("await new " + jsTypeName + "(result.Data.Value).Ready()");
                     return r;
                 }
@@ -404,13 +441,24 @@
                     let result = await NativeMapper.MapNativeObjectAsync(mapInfo);
                 }
             }
-            if (getFlag) {//构造获取属性调用函数体                
-                protoDefine.get = async function () {
-                    let mapInfo = new MapGetAccessActionInfo();
-                    mapInfo.Id = this.TneMapNativeObjectId;
-                    mapInfo.Name = protoName;
-                    let result = await NativeMapper.MapNativeObjectAsync(mapInfo);
-                    return result;
+            if (getFlag) {//构造获取属性调用函数体    
+                let isEvent = protoDefine.get["IsEvent"];
+                if (isEvent != undefined) {
+                    protoDefine.get = async function () {
+                        if (!this.eventMap_.has(protoName)) {
+                            this.eventMap_.set(protoName, new TneEvent(this.TneMapNativeObjectId, protoName, isEvent))
+                        }
+                        return this.eventMap_.get(protoName);
+                    }
+                }
+                else {
+                    protoDefine.get = async function () {
+                        let mapInfo = new MapGetAccessActionInfo();
+                        mapInfo.Id = this.TneMapNativeObjectId;
+                        mapInfo.Name = protoName;
+                        let result = await NativeMapper.MapNativeObjectAsync(mapInfo);
+                        return result;
+                    }
                 }
             }
             if (getFlag || setFlag) {
@@ -489,11 +537,47 @@
             }
         }
     }
+    //映射本机事件
+    export class TneEvent {
+        private nativeObjectId_: number;
+        private name_: string;
+        private type_: string;
+        public constructor(id: number, name: string, type: string) {
+            this.nativeObjectId_ = id;
+            this.name_ = name;
+            this.type_ = type;
+        }
+        public async AddListener(handler: (sender: any, args: any) => void): Promise<void> {
+            let mapInfo = new MapTneEventAddListenerActionInfo();
+            mapInfo.Id = this.nativeObjectId_;
+            mapInfo.Name = this.name_;
+            let data = new MapDataInfo();
+            data.DataType = MapDataType.FunctionId;
+            data.Value = handler.toString();//EventHandler<DragFilesEventArgs>
+            data.NativeTypePath = this.type_;
+            mapInfo.Args.push(data);
+            let result = await NativeMapper.MapNativeObjectAsync(mapInfo);
+            return result;
+        }
+        public async RemoveListener(handler: (sender: any, args: any) => void): Promise<void> {
+            let mapInfo = new MapTneEventRemoveListenerActionInfo();
+            mapInfo.Id = this.nativeObjectId_;
+            mapInfo.Name = this.name_;
+            let data = new MapDataInfo();
+            data.DataType = MapDataType.FunctionId;
+            data.Value = handler.toString();//EventHandler<DragFilesEventArgs>
+            data.NativeTypePath = this.type_;
+            mapInfo.Args.push(data);
+            let result = await NativeMapper.MapNativeObjectAsync(mapInfo);
+            return result;
+        }
+    }
     //所有js本机同步类型的基类
     export abstract class NativeObject {
         public TneMapNativeObjectId: number;
         private TneMapGcObject_: object;
         private args_: any;
+        private eventMap_ = new Map<string, TneEvent>();
         public constructor(args?: IArguments) {
             if (args === undefined) {
                 this.args_ = new Array();
@@ -585,7 +669,7 @@
         document.removeEventListener("DOMContentLoaded", dom_ready_, false);
         let hashCode = await TneQueryAsync(TneQueryId.GetThisFormHashCode, "GetThisFormHashCode");
         let no = new NativeObjectInfo();
-        no.Id = hashCode;
+        no.Id = parseInt(hashCode);
         no.GenericInfo = "";
         let proxy = TneForm as any;
         ThisForm = await new proxy(no).Ready();

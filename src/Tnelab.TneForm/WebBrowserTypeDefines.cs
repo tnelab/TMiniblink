@@ -10,7 +10,7 @@ using static Tnelab.MiniBlinkV.NativeMethods;
 
 namespace Tnelab.HtmlView
 {
-    enum MapAction { Create = 1, SetAccess = 2, GetAccess = 3, StaticInvoke = 4, InstanceInvoke = 5 }
+    enum MapAction { Create = 1, SetAccess = 2, GetAccess = 3, StaticInvoke = 4, InstanceInvoke = 5 , TneEventAddListener = 6, TneEventRemoveListener = 7 }
     enum MapDataType { NativeObjectId = 1, Value = 2, FunctionId = 3 };
     class RunFunctionForTneFormInfo {
         public long TneFormId { get; set; }

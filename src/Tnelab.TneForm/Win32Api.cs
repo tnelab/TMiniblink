@@ -30,6 +30,8 @@ namespace Tnelab.HtmlView
     using HICON = IntPtr;
     using HBRUSH = IntPtr;
     using PBYTE = IntPtr;
+    using HDROP = IntPtr;
+    using LPWSTR = IntPtr;
 
     [SuppressUnmanagedCodeSecurity]
     static partial class NativeMethods
@@ -292,6 +294,7 @@ namespace Tnelab.HtmlView
 
         public const int WM_MBUTTONDOWN = 0x0207;
         public const int WM_MBUTTONUP = 0x0208;
+        public const int WM_DROPFILES =                   0x0233;
 
         public const int CW_USEDEFAULT = unchecked((int)0x80000000);
 
@@ -447,6 +450,14 @@ namespace Tnelab.HtmlView
         public static extern HCURSOR LoadCursorW(HINSTANCE hInstance,uint lpCursorName);
         [DllImport("user32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
         public static extern BOOL SetForegroundWindow(HWND hWnd);
+        [DllImport("Shell32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        public static extern void DragAcceptFiles(HWND hWnd,BOOL fAccept);
+        [DllImport("Shell32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        public static extern void DragFinish(HDROP hDrop);
+        [DllImport("Shell32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern UINT DragQueryFileW(HDROP hDrop,UINT iFile,IntPtr lpszFile,UINT cch);
+        [DllImport("Shell32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        public static extern BOOL DragQueryPoint(HDROP hDrop,ref POINT ppt);
         public static ushort LOWORD(uint value)
         {
             return (ushort)(value & 0xFFFF);

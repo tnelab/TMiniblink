@@ -61,10 +61,10 @@ namespace Tnelab.HtmlView
             var rect = new NativeMethods.RECT();
             NativeMethods.GetWindowRect(parentHandle, out rect);
             //zmg
-            webView_ = wkeCreateWebView();//wkeCreateWebWindow(wkeWindowType.WKE_WINDOW_TYPE_TRANSPARENT, parentHandle, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);            
+            webView_ = wkeCreateWebWindow(wkeWindowType.WKE_WINDOW_TYPE_TRANSPARENT, parentHandle, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);            
             wkeSetHandle(webView_,parentHandle);
-            wkeSetTransparent(webView_, true);
-            wkeResize(webView_,rect.right-rect.left,rect.bottom-rect.top);
+            //wkeSetTransparent(webView_, true);
+            //wkeResize(webView_,rect.right-rect.left,rect.bottom-rect.top);
 
             this.paintUpdatedCallback_ = this.OnPaintCallback;
             wkeOnPaintUpdated(webView_, this.paintUpdatedCallback_, IntPtr.Zero);
@@ -84,6 +84,8 @@ namespace Tnelab.HtmlView
         }
         public (int result,bool isHandle) ProcessWindowMessage(IntPtr hwnd, uint msg, uint wParam, uint lParam)
         {
+            if (this.webView_ == IntPtr.Zero)
+                return (0, false);
             var isHandled = false;
             var result = 0;
             if (webView_ == IntPtr.Zero)
@@ -212,6 +214,10 @@ namespace Tnelab.HtmlView
         {
             var es = wkeGlobalExec(this.WebView);
             action(es);
+        }
+        public void Destroy()
+        {
+            this.webView_ = IntPtr.Zero;            
         }
         IntPtr webView_=IntPtr.Zero;
         IntPtr parentHandle_ = IntPtr.Zero;

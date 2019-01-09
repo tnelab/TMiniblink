@@ -16,5 +16,6 @@ namespace Tnelab.HtmlView
         string RunJs(string script);
         void JsExecStateInvoke(Action<IntPtr> action);
         void UIInvoke(Action action);
+        void Destroy();
     }
 }

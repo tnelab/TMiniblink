@@ -23,6 +23,9 @@ namespace Tnelab.HtmlView
             JsNativeInvokeHandleFactory.This.RegisterHandleCreater(MapAction.StaticInvoke, context => new StaticInvokeHandle(context));
             JsNativeInvokeHandleFactory.This.RegisterHandleCreater(MapAction.SetAccess, context => new SetAccessHandle(context));
             JsNativeInvokeHandleFactory.This.RegisterHandleCreater(MapAction.GetAccess, context => new GetAccessHandle(context));
+            JsNativeInvokeHandleFactory.This.RegisterHandleCreater(MapAction.TneEventAddListener, context => new TneEventAddListenerHandle(context));
+            JsNativeInvokeHandleFactory.This.RegisterHandleCreater(MapAction.TneEventRemoveListener, context => new TneEventRemoveListenerHandle(context));
+            
         }
         public static JsNativeInvokeHandleFactory This { get; } = new JsNativeInvokeHandleFactory();
         public IJsNavateInvokeHandle CreateHandle(JsNativeInvokeContext context)
@@ -42,8 +45,39 @@ namespace Tnelab.HtmlView
             HandleCreaterMap.Add(action, creater);
 
         }
+        public void AddToHashDic(string keyToHash,object obj)
+        {
+            hashDic_.Add(GetHash(Encoding.UTF8.GetBytes(keyToHash)), obj);
+        }
+        public void RemoveFromHashDic(string keyToHash)
+        {
+            var hash = GetHash(Encoding.UTF8.GetBytes(keyToHash));
+            if (hashDic_.ContainsKey(hash))
+            {
+                hashDic_.Remove(hash);
+            }
+        }
+        public object GetFromHashDic(string keyToHash)
+        {
+            var hash = GetHash(Encoding.UTF8.GetBytes(keyToHash));
+            if (hashDic_.ContainsKey(hash))
+            {
+                return hashDic_[hash];
+            }
+            return null;
+        }
+        private readonly Dictionary<int, object> hashDic_ = new Dictionary<int, object>();
         private readonly Dictionary<MapAction, Func<JsNativeInvokeContext, IJsNavateInvokeHandle>> HandleCreaterMap = new Dictionary<MapAction, Func<JsNativeInvokeContext, IJsNavateInvokeHandle>>();
         private JsNativeInvokeHandleFactory() {
+        }
+        private int GetHash(byte[] datas)
+        {
+            int h = 0;
+            foreach (var item in datas)
+            {
+                h = 31 * h + item;
+            }
+            return h;
         }
     }
     class JsNativeInvokeContext
@@ -251,11 +285,14 @@ namespace Tnelab.HtmlView
                     jsTypeName = jsTypeName.Substring(0, b);
                 }
                 var strBuilder = new StringBuilder();
-                strBuilder.Append("return (function(){")
-                    .Append("let no=new Tnelab.JsNativeMap.NativeObjectInfo();")
-                    .Append($"no.Id = {id};")
-                    .Append($"no.GenericInfo = \"{genericInfo}\";")
-                    .Append($"return new {jsTypeName}(no);")
+                strBuilder.Append("(async function(){")
+                    .AppendLine("let no=new Tnelab.NativeObjectInfo();")
+                    .AppendLine($"no.Id = {id};")
+                    .AppendLine($"no.GenericInfo = \"{genericInfo}\";")
+                    .AppendLine($"let ro=new {jsTypeName}(no);")
+                    .AppendLine($"let r=await ro.Ready();")
+                    .AppendLine($"r.TneMapGcObject_ = Tnelab.OnGetGC(r.TneMapNativeObjectId);")
+                    .AppendLine($"return r;")
                     .Append("})()");
                 return strBuilder.ToString();
             }
@@ -269,11 +306,14 @@ namespace Tnelab.HtmlView
                     jsTypeName = jsTypeName.Substring(0, b);
                 }
                 var strBuilder = new StringBuilder();
-                strBuilder.Append("return (function(){")
-                    .Append("let no=new Tnelab.JsNativeMap.NativeObjectInfo();")
-                    .Append($"no.Id = {id};")
-                    .Append($"no.GenericInfo = \"{genericInfo}\";")
-                    .Append($"return new {jsTypeName}(no);")
+                strBuilder.Append("(async function(){")
+                    .AppendLine("let no=new Tnelab.NativeObjectInfo();")
+                    .AppendLine($"no.Id = {id};")
+                    .AppendLine($"no.GenericInfo = \"{genericInfo}\";")
+                    .AppendLine($"let ro=new {jsTypeName}(no);")
+                    .AppendLine($"let r=await ro.Ready();")
+                    .AppendLine($"r.TneMapGcObject_ = Tnelab.OnGetGC(r.TneMapNativeObjectId);")
+                    .AppendLine($"return r;")
                     .Append("})()");
                 return strBuilder.ToString();
             }
@@ -284,13 +324,20 @@ namespace Tnelab.HtmlView
                 if (gv != null)
                     return gv;
                 var tVal = val as Tuple<long, object>;//是否一个已存在的js同步对象
+                var id = WebBrowserInfo.GetNativeObjectId(val);
                 if (val == null)
                 {
                     gv = "undefined";
                 }
                 else if (tVal != null)//是否一个已存在的js同步对象
                 {
+                    var tmpNO = WebBrowserInfo.GetNativeObject(id,true);
                     gv = getJvByTuple(tVal.Item1, type_name, genericInfo);
+                }
+                else if (id != -1)//是否一个已存在的js同步对象
+                {
+                    var tmpNO = WebBrowserInfo.GetNativeObject(id,true);
+                    gv = getJvByTuple(id, type_name, genericInfo);
                 }
                 else if (GetJsTypeName(type_name) != null)//一个已经映射的js类型,但是未存在的js对象
                 {
@@ -299,7 +346,7 @@ namespace Tnelab.HtmlView
                 else//其他，直接序列
                 {
                     var json = JsonConvert.SerializeObject(val);
-                    gv = $"JSON.parse({json})";
+                    gv = $"{json}";
                 }
                 return gv;
             }
@@ -352,16 +399,17 @@ namespace Tnelab.HtmlView
             //    }
             //    return (lnativeType, lisAction);
             //}
-            object IsFunctionId(Type theNativeType, bool theIsAction, IWebBrowser theBrowser,string script)
+            object IsFunctionId(Type theNativeType, IWebBrowser theBrowser,string script)
             {
-                var paramTypes = theNativeType.GetGenericArguments();
+                var delegateInfo = theNativeType.GetMethod("Invoke");
+                bool theIsAction = delegateInfo.ReturnType == typeof(void);
+
+                var paramTypes = delegateInfo.GetParameters().Select(it => it.ParameterType).ToArray();
                 List<ParameterExpression> paramExps = new List<ParameterExpression>();
                 List<Expression> vParamExps = new List<Expression>() {
-                    Expression.Convert(Expression.Constant(theIsAction), typeof(object)),
                     Expression.Convert(Expression.Constant(theBrowser), typeof(object)),
                     Expression.Convert(Expression.Constant(script), typeof(object))
                 };
-
                 var len = paramTypes.Length;
                 if (!theIsAction)
                 {
@@ -378,15 +426,18 @@ namespace Tnelab.HtmlView
                 LambdaExpression lambdaExpr;
                 if (theIsAction)
                 {
-                    lambdaExpr = Expression.Lambda(Expression.Call(Expression.Constant(this), typeof(JsNativeInvokeContext).GetMethod("ActionCallJs", BindingFlags.NonPublic | BindingFlags.Instance), arrayExp), paramExps);
+                    var method = typeof(JsNativeInvokeContext).GetMethod("ActionCallJs", BindingFlags.NonPublic | BindingFlags.Instance);
+                    lambdaExpr = Expression.Lambda(theNativeType,Expression.Call(Expression.Constant(this), method, arrayExp), paramExps);
                 }
                 else
                 {
-                    lambdaExpr = Expression.Lambda(Expression.Convert(Expression.Call(Expression.Constant(this), typeof(JsNativeInvokeContext).GetMethod("FuncCallJs", BindingFlags.NonPublic | BindingFlags.Instance), arrayExp), paramTypes[paramTypes.Length - 1]), paramExps);
+                    var method = typeof(JsNativeInvokeContext).GetMethod("FuncCallJs", BindingFlags.NonPublic | BindingFlags.Instance);
+                    lambdaExpr = Expression.Lambda(theNativeType,Expression.Convert(Expression.Call(Expression.Constant(this), method, arrayExp), paramTypes[paramTypes.Length - 1]), paramExps);
                 }
                 return lambdaExpr.Compile();
             }
-            var browser =WebBrowserInfo.WebBrowser;
+            var tobj=WebBrowserInfo.GetNativeObject(MapInfo.Id, false) as TneForm;
+            var browser =tobj==null?WebBrowserInfo.WebBrowser:tobj.WebBrowser;
             Type nativeType = null;
             object obj = null;
             //bool isFunc = false;
@@ -410,7 +461,8 @@ namespace Tnelab.HtmlView
             {
                 nativeType = GetTypeByString(dataInfo.NativeTypePath);
                 bool isAction = nativeType.FullName.StartsWith("System.Action");
-                obj = IsFunctionId(nativeType, isAction, browser,dataInfo.Value.ToString());
+                bool isFunction= nativeType.FullName.StartsWith("System.Func");
+                obj = IsFunctionId(nativeType, browser,dataInfo.Value.ToString());
             }
             else
             {
@@ -448,13 +500,12 @@ namespace Tnelab.HtmlView
                     throw new Exception($"本机对象不存在{nobj.Id}");
                 return r;
             }
-            var isAction = (bool)objs[0];
-            var browser = objs[1] as IWebBrowser;
-            var script = objs[2].ToString();
-            var args = new string[objs.Length - 3];
+            var browser = objs[0] as IWebBrowser;
+            var script = objs[1].ToString();
+            var args = new string[objs.Length - 2];
             for (var i = 0; i < args.Length; i++)
             {
-                args[i] = NativeToJsValue(objs[i + 3]);
+                args[i] = NativeToJsValue(objs[i + 2]);
             }
             var toRun = $"return Tnelab.OnCallJs(({script})({string.Join(",", args)}))";
             var result = browser.RunJs(toRun);
@@ -465,13 +516,12 @@ namespace Tnelab.HtmlView
         }
         void ActionCallJs(params object[] objs)
         {
-            var isAction = (bool)objs[0];
-            var browser = objs[1] as IWebBrowser;
-            var script = objs[2].ToString();
-            var args = new string[objs.Length - 3];
+            var browser = objs[0] as IWebBrowser;
+            var script = objs[1].ToString();
+            var args = new string[objs.Length - 2];
             for (var i = 0; i < args.Length; i++)
             {
-                args[i] = NativeToJsValue(objs[i + 3]);
+                args[i] = NativeToJsValue(objs[i + 2]);
             }
             var toRun = $"return Tnelab.OnCallJs(({script})({string.Join(",", args)}))";
             var result = browser.RunJs(toRun);
@@ -552,7 +602,8 @@ namespace Tnelab.HtmlView
             }
             else
             {
-                if (r.GetType().IsValueType || this.Context.GetJsTypeName(r.GetType().FullName)==null)
+                var nativeTypeName = this.Context.GetJsTypeName(r.GetType().FullName);
+                if (r.GetType().IsValueType || nativeTypeName==null)
                 {
                     result = new MapResult { Status = true, Data = new MapDataInfo { DataType = MapDataType.Value, Value = r } };
                 }
@@ -565,7 +616,7 @@ namespace Tnelab.HtmlView
                         genericInfo = this.Context.GetGenericInfo(r.GetType());
                         id = this.Context.WebBrowserInfo.AddNativeObject(r,genericInfo);
                     }
-                    result = new MapResult { Status = true, Data = new MapDataInfo { DataType = MapDataType.NativeObjectId, Value = new NativeObjectInfo { Id = id, GenericInfo = genericInfo } } };
+                    result = new MapResult { Status = true, Data = new MapDataInfo { DataType = MapDataType.NativeObjectId, Value = new NativeObjectInfo { Id = id, GenericInfo = genericInfo,Path= r.GetType().FullName } } };
                 }
             }
             return result;
@@ -668,6 +719,40 @@ namespace Tnelab.HtmlView
             if (method.ReturnType.FullName == "System.Void")
                 return null;
             return r;
+        }
+    }
+    class TneEventAddListenerHandle : ObjectInvokeHandle
+    {
+        internal TneEventAddListenerHandle(JsNativeInvokeContext context) : base(context) { }
+        protected override object InvokeMethod(Type[] types, object[] args)
+        {
+            var mapInfo = this.Context.MapInfo;
+            var obj = this.Context.WebBrowserInfo.GetNativeObject(mapInfo.Id, false);
+            if (obj == null)
+                throw new Exception($"本机对象{mapInfo.Id}不存在");
+            var eventInfo = obj.GetType().GetEvent(mapInfo.Name);
+            var delegeateInfo = args[0] as Delegate;
+            var inAction=delegeateInfo.GetType().GetMethod("Invoke");
+            Delegate handler = Delegate.CreateDelegate(eventInfo.EventHandlerType,args[0], inAction);
+            eventInfo.AddEventHandler(obj,handler);
+            JsNativeInvokeHandleFactory.This.AddToHashDic(mapInfo.Args[0].Value.ToString(), handler);
+            return null;
+        }
+    }
+    class TneEventRemoveListenerHandle : ObjectInvokeHandle
+    {
+        internal TneEventRemoveListenerHandle(JsNativeInvokeContext context) : base(context) { }
+        protected override object InvokeMethod(Type[] types, object[] args)
+        {
+            var mapInfo = this.Context.MapInfo;
+            var obj = this.Context.WebBrowserInfo.GetNativeObject(mapInfo.Id, false);
+            if (obj == null)
+                throw new Exception($"本机对象{mapInfo.Id}不存在");
+            var eventInfo = obj.GetType().GetEvent(mapInfo.Name);
+            var handler = JsNativeInvokeHandleFactory.This.GetFromHashDic(mapInfo.Args[0].Value.ToString()) as Delegate;
+            eventInfo.RemoveEventHandler(obj, handler);
+            JsNativeInvokeHandleFactory.This.RemoveFromHashDic(mapInfo.Args[0].Value.ToString());
+            return null;
         }
     }
 }

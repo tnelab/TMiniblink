@@ -8,19 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 ///<reference path="../../../Tnelab.TneForm.Test.BLL/SimpleTestService.cs.ts"/>
 let newForm;
+let eventTest = function (sender, args) {
+    alert(args.Files.join(",") + ":X:" + args.X + ":Y:" + args.Y);
+};
 function InvokeTest() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            //var simple = await new BLL.SimpleTestService().Ready();
             newForm = yield new Tnelab.TneForm().Ready();
             yield (newForm.Url = "Tne://Tnelab.TneForm.Test/ui/default.html?cmd=测试");
-            yield (newForm.Parent = Tnelab.ThisForm);
-            yield newForm.ShowDialog();
-            //var t = await newForm.RunFunc(function () {
-            //    var win = window as any;
-            //    win.MiniWindow();
-            //    return "";
-            //});
+            yield (newForm.TopMost = true);
+            yield newForm.Show();
         }
         catch (error) {
             console.log(error);
@@ -29,17 +26,9 @@ function InvokeTest() {
 }
 function callOtherForm() {
     return __awaiter(this, void 0, void 0, function* () {
-        let result = yield newForm.RunFunc(function () {
-            return __awaiter(this, void 0, void 0, function* () {
-                try {
-                    yield MiniWindow();
-                }
-                catch (error) {
-                    alert(error);
-                }
-                return undefined;
-            });
-        });
+        let event = yield Tnelab.ThisForm.DragFilesEvent;
+        yield event.RemoveListener(eventTest);
+        alert("HI2");
     });
 }
 function showId() {

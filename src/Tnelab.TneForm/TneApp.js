@@ -38,6 +38,15 @@ var Tnelab;
         GcMap.set(id, gc);
     }
     Tnelab.OnSetGC = OnSetGC;
+    function OnGetGC(id) {
+        let gc = undefined;
+        if (GcMap.has(id)) {
+            gc = GcMap.get(id);
+            GcMap.delete(id);
+        }
+        return gc;
+    }
+    Tnelab.OnGetGC = OnGetGC;
     //本机调用,用于序列化RunJs的调用结果为JSON
     class OnCallJsInfo {
     }
@@ -89,6 +98,7 @@ var Tnelab;
             yield TneQueryAsync(TneQueryId.RegisterNativeMap, JSON.stringify(args));
         });
     }
+    Tnelab.RegisterNativeMapAsync = RegisterNativeMapAsync;
     //本机对象释放通道
     function DeleteNativeObject(id) {
         let args = id.toString();
@@ -125,6 +135,15 @@ var Tnelab;
         };
     }
     Tnelab.InvokeInfo = InvokeInfo;
+    //装饰器，事件
+    function IsEvent(type) {
+        return function (target, propertyKey, descriptor) {
+            if (descriptor.get != undefined) {
+                descriptor.get["IsEvent"] = type;
+            }
+        };
+    }
+    Tnelab.IsEvent = IsEvent;
     //类型映射JS存根
     class JsMapInfo {
         constructor() { }
@@ -192,6 +211,8 @@ var Tnelab;
         MapAction[MapAction["GetAccess"] = 3] = "GetAccess";
         MapAction[MapAction["StaticInvoke"] = 4] = "StaticInvoke";
         MapAction[MapAction["InstanceInvoke"] = 5] = "InstanceInvoke";
+        MapAction[MapAction["TneEventAddListener"] = 6] = "TneEventAddListener";
+        MapAction[MapAction["TneEventRemoveListener"] = 7] = "TneEventRemoveListener";
     })(MapAction || (MapAction = {}));
     //调用传递的参数类型描述，非本机或js类型，表示的是数据的元信息
     let MapDataType;
@@ -207,6 +228,7 @@ var Tnelab;
     //一个本机对象描述
     class NativeObjectInfo {
     }
+    Tnelab.NativeObjectInfo = NativeObjectInfo;
     //映射结果描述
     class MapResult {
     }
@@ -242,6 +264,20 @@ var Tnelab;
     class MapGetAccessActionInfo {
         constructor() {
             this.Action = MapAction.GetAccess;
+            this.Args = new Array();
+        }
+    }
+    //添加事件侦听器
+    class MapTneEventAddListenerActionInfo {
+        constructor() {
+            this.Action = MapAction.TneEventAddListener;
+            this.Args = new Array();
+        }
+    }
+    //移除事件侦听器
+    class MapTneEventRemoveListenerActionInfo {
+        constructor() {
+            this.Action = MapAction.TneEventRemoveListener;
             this.Args = new Array();
         }
     }
@@ -356,7 +392,14 @@ var Tnelab;
                     if (mapInfo.Action != MapAction.Create && result.Data.DataType === MapDataType.NativeObjectId) {
                         let nativeTypeName = result.Data.Value.Path;
                         let jsMapInfo = JsMapInfo.GetMapInfoByNativeTypePath(nativeTypeName);
-                        let r = yield new jsMapInfo.JsType.prototype.constructor(result.Data.Value).Ready();
+                        let no = new NativeObjectInfo();
+                        no.Id = result.Data.Value.Id;
+                        no.GenericInfo = result.Data.Value.GenericInfo;
+                        no.Path = result.Data.Value.Path;
+                        let rx = new jsMapInfo.JsType.prototype.constructor(no);
+                        let r = yield rx.Ready();
+                        r.TneMapGcObject_ = GcMap.get(r.TneMapNativeObjectId);
+                        GcMap.delete(r.TneMapNativeObjectId);
                         //let r = eval("await new " + jsTypeName + "(result.Data.Value).Ready()");
                         return r;
                     }
@@ -449,16 +492,29 @@ var Tnelab;
                     });
                 };
             }
-            if (getFlag) { //构造获取属性调用函数体                
-                protoDefine.get = function () {
-                    return __awaiter(this, void 0, void 0, function* () {
-                        let mapInfo = new MapGetAccessActionInfo();
-                        mapInfo.Id = this.TneMapNativeObjectId;
-                        mapInfo.Name = protoName;
-                        let result = yield NativeMapper.MapNativeObjectAsync(mapInfo);
-                        return result;
-                    });
-                };
+            if (getFlag) { //构造获取属性调用函数体    
+                let isEvent = protoDefine.get["IsEvent"];
+                if (isEvent != undefined) {
+                    protoDefine.get = function () {
+                        return __awaiter(this, void 0, void 0, function* () {
+                            if (!this.eventMap_.has(protoName)) {
+                                this.eventMap_.set(protoName, new TneEvent(this.TneMapNativeObjectId, protoName, isEvent));
+                            }
+                            return this.eventMap_.get(protoName);
+                        });
+                    };
+                }
+                else {
+                    protoDefine.get = function () {
+                        return __awaiter(this, void 0, void 0, function* () {
+                            let mapInfo = new MapGetAccessActionInfo();
+                            mapInfo.Id = this.TneMapNativeObjectId;
+                            mapInfo.Name = protoName;
+                            let result = yield NativeMapper.MapNativeObjectAsync(mapInfo);
+                            return result;
+                        });
+                    };
+                }
             }
             if (getFlag || setFlag) {
                 Object.defineProperty(prop, protoName, protoDefine);
@@ -538,9 +594,47 @@ var Tnelab;
             }
         }
     }
+    //映射本机事件
+    class TneEvent {
+        constructor(id, name, type) {
+            this.nativeObjectId_ = id;
+            this.name_ = name;
+            this.type_ = type;
+        }
+        AddListener(handler) {
+            return __awaiter(this, void 0, void 0, function* () {
+                let mapInfo = new MapTneEventAddListenerActionInfo();
+                mapInfo.Id = this.nativeObjectId_;
+                mapInfo.Name = this.name_;
+                let data = new MapDataInfo();
+                data.DataType = MapDataType.FunctionId;
+                data.Value = handler.toString(); //EventHandler<DragFilesEventArgs>
+                data.NativeTypePath = this.type_;
+                mapInfo.Args.push(data);
+                let result = yield NativeMapper.MapNativeObjectAsync(mapInfo);
+                return result;
+            });
+        }
+        RemoveListener(handler) {
+            return __awaiter(this, void 0, void 0, function* () {
+                let mapInfo = new MapTneEventRemoveListenerActionInfo();
+                mapInfo.Id = this.nativeObjectId_;
+                mapInfo.Name = this.name_;
+                let data = new MapDataInfo();
+                data.DataType = MapDataType.FunctionId;
+                data.Value = handler.toString(); //EventHandler<DragFilesEventArgs>
+                data.NativeTypePath = this.type_;
+                mapInfo.Args.push(data);
+                let result = yield NativeMapper.MapNativeObjectAsync(mapInfo);
+                return result;
+            });
+        }
+    }
+    Tnelab.TneEvent = TneEvent;
     //所有js本机同步类型的基类
     class NativeObject {
         constructor(args) {
+            this.eventMap_ = new Map();
             this.TneMapGenericInfo = "";
             if (args === undefined) {
                 this.args_ = new Array();
@@ -634,7 +728,7 @@ var Tnelab;
             document.removeEventListener("DOMContentLoaded", dom_ready_, false);
             let hashCode = yield TneQueryAsync(TneQueryId.GetThisFormHashCode, "GetThisFormHashCode");
             let no = new NativeObjectInfo();
-            no.Id = hashCode;
+            no.Id = parseInt(hashCode);
             no.GenericInfo = "";
             let proxy = Tnelab.TneForm;
             Tnelab.ThisForm = yield new proxy(no).Ready();
@@ -662,6 +756,7 @@ var Tnelab;
 (function (Tnelab) {
     let TneForm = class TneForm extends Tnelab.TneFormBase {
         constructor() { super(arguments); }
+        get DragFilesEvent() { return undefined; }
         get Handle() { return undefined; }
         get Title() { return undefined; }
         set SizeAble(value) { }
@@ -676,6 +771,8 @@ var Tnelab;
         get Height() { return undefined; }
         set ShowInTaskBar(value) { }
         get ShowInTaskBar() { return undefined; }
+        set TopMost(value) { }
+        get TopMost() { return undefined; }
         set MinWidth(value) { }
         get MinWidth() { return undefined; }
         set MinHeight(value) { }
@@ -688,6 +785,8 @@ var Tnelab;
         get WindowState() { return undefined; }
         set Parent(value) { }
         get Parent() { return undefined; }
+        set AllowDrop(value) { }
+        get AllowDrop() { return undefined; }
         set Icon(value) { }
         get Icon() { return undefined; }
         Close() { }
@@ -695,12 +794,16 @@ var Tnelab;
         Show() { }
         Hide() { }
         Move() { }
-        Equals(tneMapId) { }
+        Equals(_obj) { return undefined; }
+        static Equals_(_objA, _objB) { return undefined; }
         GetHashCode() { return undefined; }
         GetType() { return undefined; }
-        ReferenceEquals(objA, objB) { return undefined; }
+        static ReferenceEquals(_objA, _objB) { return undefined; }
         ToString() { return undefined; }
     };
+    __decorate([
+        Tnelab.IsEvent("System.EventHandler<Tnelab.HtmlView.DragFilesEventArgs>")
+    ], TneForm.prototype, "DragFilesEvent", null);
     __decorate([
         Tnelab.InvokeInfo(undefined, "System.Boolean")
     ], TneForm.prototype, "SizeAble", null);
@@ -720,6 +823,9 @@ var Tnelab;
         Tnelab.InvokeInfo(undefined, "System.Boolean")
     ], TneForm.prototype, "ShowInTaskBar", null);
     __decorate([
+        Tnelab.InvokeInfo(undefined, "System.Boolean")
+    ], TneForm.prototype, "TopMost", null);
+    __decorate([
         Tnelab.InvokeInfo(undefined, "System.Int32")
     ], TneForm.prototype, "MinWidth", null);
     __decorate([
@@ -737,6 +843,9 @@ var Tnelab;
     __decorate([
         Tnelab.InvokeInfo(undefined, "Tnelab.HtmlView.TneForm")
     ], TneForm.prototype, "Parent", null);
+    __decorate([
+        Tnelab.InvokeInfo(undefined, "System.Boolean")
+    ], TneForm.prototype, "AllowDrop", null);
     __decorate([
         Tnelab.InvokeInfo(undefined, "System.String")
     ], TneForm.prototype, "Icon", null);
@@ -756,7 +865,6 @@ var Tnelab;
         Tnelab.InvokeInfo("Move")
     ], TneForm.prototype, "Move", null);
     __decorate([
-        Tnelab.InvokeInfo("Equals", "System.Object", "System.Object"),
         Tnelab.InvokeInfo("Equals", "System.Object")
     ], TneForm.prototype, "Equals", null);
     __decorate([
@@ -766,15 +874,19 @@ var Tnelab;
         Tnelab.InvokeInfo("GetType")
     ], TneForm.prototype, "GetType", null);
     __decorate([
-        Tnelab.InvokeInfo("ReferenceEquals", "System.Object", "System.Object")
-    ], TneForm.prototype, "ReferenceEquals", null);
-    __decorate([
         Tnelab.InvokeInfo("ToString")
     ], TneForm.prototype, "ToString", null);
+    __decorate([
+        Tnelab.InvokeInfo("Equals_", "System.Object", "System.Object")
+    ], TneForm, "Equals_", null);
+    __decorate([
+        Tnelab.InvokeInfo("ReferenceEquals", "System.Object", "System.Object")
+    ], TneForm, "ReferenceEquals", null);
     TneForm = __decorate([
         Tnelab.ConstructorInfo(),
         Tnelab.ToMap("Tnelab.TneForm", "Tnelab.HtmlView.TneForm")
     ], TneForm);
     Tnelab.TneForm = TneForm;
+    Tnelab.RegisterNativeMapAsync("Tnelab.HtmlView.TneForm", "Tnelab.TneForm");
 })(Tnelab || (Tnelab = {}));
 //# sourceMappingURL=TneApp.js.map

@@ -55,6 +55,7 @@ namespace Tnelab.HtmlView
             mbOnJsQuery(webView_, this.jsQueryCallback_, IntPtr.Zero);
             this.consoleCallback_ = this.OnConsole;
             mbOnConsole(webView_, this.consoleCallback_, IntPtr.Zero);
+            mbSetDragDropEnable(webView_, true);
         }
         public void UIInvoke(Action action)
         {
@@ -62,6 +63,8 @@ namespace Tnelab.HtmlView
         }
         public (int result,bool isHandle) ProcessWindowMessage(IntPtr hwnd, uint msg, uint wParam, uint lParam)
         {
+            if (this.webView_ == IntPtr.Zero)
+                return (0, false);
             var isHandled = false;
             var result = 0;
             if (webView_ != IntPtr.Zero)
@@ -89,7 +92,9 @@ namespace Tnelab.HtmlView
                     case NativeMethods.WM_RBUTTONDOWN:
                     case NativeMethods.WM_RBUTTONUP:
                         {
-                            (result,isHandled) = OnMouseEvent(parentHandle_, msg, lParam, wParam);
+                            var (x, y, delta, flags) = GetMouseMsgInfo(lParam, wParam);
+                            mbFireMouseEvent(webView_, msg, x, y, flags);
+                            isHandled = true;
                         }
                         break;
                     case NativeMethods.WM_KEYDOWN:
@@ -180,6 +185,10 @@ namespace Tnelab.HtmlView
             });
             tcs.Task.Wait();
         }
+        public void Destroy()
+        {
+            this.webView_ = IntPtr.Zero;
+        }
         IntPtr webView_=IntPtr.Zero;
         IntPtr parentHandle_ = IntPtr.Zero;
         mbPaintUpdatedCallback paintUpdatedCallback_;
@@ -191,12 +200,6 @@ namespace Tnelab.HtmlView
         {
             var (x, y, delta, flags) = GetMouseMsgInfo(lParam, wParam);
             mbFireMouseWheelEvent(webView_,x, y, delta, flags);
-        }
-        (int result,bool isHandled) OnMouseEvent(IntPtr handle, uint msg, uint lParam, uint wParam)
-        {
-            var (x, y, delta, flags) = GetMouseMsgInfo(lParam, wParam);
-            mbFireMouseEvent(webView_,msg, x, y, flags);
-            return (0, true);
         }
         (int, int, int, uint) GetMouseMsgInfo(uint lParam, uint wParam)
         {
