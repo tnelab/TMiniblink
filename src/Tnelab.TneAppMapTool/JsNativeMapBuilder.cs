@@ -35,6 +35,11 @@ namespace Tnelab.TneAppMapTool
             strBuilder.AppendLine(String.Join("\r\n", constructorInfoList.Select(it => $"\t{it}").ToArray()));
             strBuilder.AppendLine($"\t@Tnelab.ToMap(\"{theNamespace}.{codeModel.ClassName}\",\"{codeModel.NamespaceName}.{codeModel.ClassName}\")");
             strBuilder.AppendLine($"\texport class {codeModel.ClassName} extends {theBase} {{");
+            codeModel.ProcessEvent((eventInfo) => {
+                strBuilder.AppendLine($"\t\t@Tnelab.IsEvent(\"{eventInfo.TypeName}\")");
+                var staticFlag = eventInfo.IsStatic ? "static" : "";
+                strBuilder.AppendLine($"\t\tpublic {staticFlag} get {eventInfo.Name}():Tnelab.TneEvent{{ return undefined; }}");
+            });
             codeModel.ProcessProperty((propInfo) => {
                 if (propInfo.HasSet)
                 {                    
@@ -127,6 +132,10 @@ namespace Tnelab.TneAppMapTool
                     funcInfo.ParamList.Insert(0, new CodeParamInfo() { Name = "tneMapGenericTypeInfo", TypeName = "System.String" });
                 }
                 strBuilder.AppendLine($"\t\tpublic constructor({string.Join(",", funcInfo.ParamList.Select(it => $"_{it.Name}:{GetJsTypeNameByTypeName(it.TypeName, codeModel.GenericTypeArguments, funcInfo.GenericTypeArguments)}"))}) {{super(arguments);}}");
+            }
+            else if (codeModel.CodeConstructorList.Count == 0)
+            {
+                strBuilder.AppendLine($"\t\tpublic constructor() {{super(arguments);}}");
             }
             strBuilder.AppendLine("\t}");
             strBuilder.AppendLine($"\tTnelab.RegisterNativeMapAsync(\"{codeModel.NamespaceName}.{codeModel.ClassName}\",\"{theNamespace}.{codeModel.ClassName}\");");

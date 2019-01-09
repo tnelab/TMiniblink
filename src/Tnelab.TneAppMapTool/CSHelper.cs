@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using EnvDTE;
 using System.Reflection;
+using EnvDTE80;
 
 
 namespace Tnelab.TneAppMapTool
@@ -39,6 +40,12 @@ namespace Tnelab.TneAppMapTool
         public bool IsAbstract { get; set; } = false;
         public List<CodeParamInfo> ParamList = new List<CodeParamInfo>();
     }
+    class CodeEventInfo
+    {
+        public string Name { get; set; }
+        public string TypeName{get;set;}
+        public bool IsStatic { get; set; } = false;
+    }
     class CodeModel
     {
         EnvDTE.FileCodeModel code_model_;
@@ -49,6 +56,7 @@ namespace Tnelab.TneAppMapTool
         public List<CodeFunctionInfo> CodeConstructorList = new List<CodeFunctionInfo>();
         public List<CodeFunctionInfo> CodeFunctionList = new List<CodeFunctionInfo>();
         public List<CodePropertyInfo> CodePropertyList = new List<CodePropertyInfo>();
+        public List<CodeEventInfo> CodeEventList = new List<CodeEventInfo>();
         public List<string> GenericTypeArguments = new List<string>();
 
         public CodeModel(string theType)
@@ -97,6 +105,10 @@ namespace Tnelab.TneAppMapTool
             }
             var pros = type.GetProperties(BindingFlags.Public|BindingFlags.Instance);
             CodePropertyList.AddRange(pros.Select(it=>new CodePropertyInfo() { Name=it.Name,TypeName=GetTypeName(it.PropertyType), HasGet=it.GetGetMethod(false)!=null,HasSet=it.GetSetMethod(false)!=null,IsStatic=it.GetGetMethod().IsStatic,IsVirtual=it.GetGetMethod().IsVirtual,IsAbstract=it.GetGetMethod().IsAbstract}));
+            var events = type.GetEvents(BindingFlags.Public | BindingFlags.Static);
+            CodeEventList.AddRange(events.Select(it => new CodeEventInfo() { Name = it.Name, TypeName = GetTypeName(it.EventHandlerType), IsStatic = true }));
+            events = type.GetEvents(BindingFlags.Public | BindingFlags.Instance);
+            CodeEventList.AddRange(events.Select(it => new CodeEventInfo() { Name = it.Name, TypeName = GetTypeName(it.EventHandlerType), IsStatic = false }));
         }
         public CodeModel(EnvDTE.FileCodeModel codeModel)
         {
@@ -259,6 +271,18 @@ namespace Tnelab.TneAppMapTool
                         CodePropertyList.Add(property_info);
                     }
                 }
+                else if (codeElement.Kind == vsCMElement.vsCMElementEvent)
+                {
+                    CodeEvent codeEvent = codeElement as CodeEvent;
+                    if (codeEvent.Access == vsCMAccess.vsCMAccessPublic)
+                    {
+                        CodeEventInfo codeEventInfo = new CodeEventInfo();
+                        codeEventInfo.Name = codeEvent.Name;
+                        codeEventInfo.TypeName = codeEvent.Type.AsFullName;
+                        codeEventInfo.IsStatic = codeEvent.IsShared;
+                        CodeEventList.Add(codeEventInfo);
+                    }
+                }
             }
             foreach(CodeClass baseClass in codeClass.Bases)
             {
@@ -303,6 +327,14 @@ namespace Tnelab.TneAppMapTool
             foreach (var prop_info in CodePropertyList)
             {
                 action(prop_info);
+            }
+        }
+        //处理公有事件
+        public void ProcessEvent(Action<CodeEventInfo> action)
+        {
+            foreach(var eventInfo in CodeEventList)
+            {
+                action(eventInfo);
             }
         }
         private string GetTypeName(Type type)
