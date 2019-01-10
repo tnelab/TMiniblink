@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+    <link rel="stylesheet" type="text/css" href="/UI/css/ContextMenu.css" />
+    @RenderSection("styles", required: false)
+    <script src="Tne://Tnelab.TneForm/TneApp.js"></script>
+    <script src="Tne://Tnelab.TneForm.Test.BLL/Service.js"></script>
+    <script src="Tne://Tnelab.TneForm.Test/ui/script/window.js"></script>
+    @RenderSection("scripts", required: false)
+
+</head>
+<body>
+    <div class="window_bg"></div>
+    <div class="window">
+        <div class="window_client">@RenderBody()</div>
+    </div>
+</body>
+</html>

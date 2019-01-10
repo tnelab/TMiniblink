@@ -58,7 +58,7 @@ body {
     -webkit-filter: blur(1px);
     background-size: 100% 100%;
     background-repeat: no-repeat;
-    -webkit-animation: mymove 2s;
+    -webkit-animation: mymove 1s;
     overflow: hidden;
 }
 .window {
@@ -72,18 +72,18 @@ body {
     width: calc(100%);
     box-shadow: 0px 0px 10px #e5e580 inset;
     z-index: 2;
-    -webkit-animation: mymove 2s;
+    -webkit-animation: mymove 1s;
     overflow: hidden;
 }
 @-webkit-keyframes mymove
 {
     from {
         opacity: 0.0;
-        -webkit-transform: scale(0.1) rotate(0deg);        
+        -webkit-transform: scale(0.1);        
     }
     to {
         opacity: 1.0;
-        -webkit-transform: scale(1.0) rotate(360deg);
+        -webkit-transform: scale(1.0);
     }
 }
 .window_client {

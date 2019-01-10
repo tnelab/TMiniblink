@@ -46,6 +46,7 @@ namespace Tnelab.HtmlView
             var rect = new NativeMethods.RECT();
             NativeMethods.GetWindowRect(parentHandle, out rect);
             webView_ = mbCreateWebWindow(mbWindowType.MB_WINDOW_TYPE_TRANSPARENT, parentHandle, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top); this.paintUpdatedCallback_ = this.OnPaintCallback;
+            this.paintUpdatedCallback_ = this.OnPaintCallback;
             mbOnPaintUpdated(webView_, this.paintUpdatedCallback_, IntPtr.Zero);
             this.titleChangedCallback_ = this.OnTitleChanged;
             mbOnTitleChanged(webView_,  this.titleChangedCallback_, IntPtr.Zero);
@@ -56,6 +57,7 @@ namespace Tnelab.HtmlView
             this.consoleCallback_ = this.OnConsole;
             mbOnConsole(webView_, this.consoleCallback_, IntPtr.Zero);
             mbSetDragDropEnable(webView_, true);
+            
         }
         public void UIInvoke(Action action)
         {
@@ -80,6 +82,13 @@ namespace Tnelab.HtmlView
                             isHandled = true;
                         }
                         break;
+                    //case NativeMethods.WM_CONTEXTMENU:
+                    //    {
+                    //        var (x, y, delta, flags) = GetMouseMsgInfo(lParam, wParam);
+                    //        //mbFireContextMenuEvent(this.webView_, x, y, flags);
+                    //        isHandled = true;
+                    //    }
+                    //    break;
                     case NativeMethods.WM_MOUSEWHEEL:
                         {
                             OnMouseWheel(lParam, wParam);
@@ -94,7 +103,14 @@ namespace Tnelab.HtmlView
                         {
                             var (x, y, delta, flags) = GetMouseMsgInfo(lParam, wParam);
                             mbFireMouseEvent(webView_, msg, x, y, flags);
-                            isHandled = true;
+                            if (msg == NativeMethods.WM_RBUTTONUP)
+                            {
+                                isHandled = false;
+                            }
+                            else
+                            {
+                                isHandled = true;
+                            }
                         }
                         break;
                     case NativeMethods.WM_KEYDOWN:
@@ -140,7 +156,7 @@ namespace Tnelab.HtmlView
                         break;
                     case NativeMethods.WM_KILLFOCUS:
                         mbKillFocus(webView_);
-                        isHandled = true;
+                        isHandled = false;
                         break;
                     case NativeMethods.WM_IME_STARTCOMPOSITION:
                         {
@@ -206,7 +222,18 @@ namespace Tnelab.HtmlView
             var x = NativeMethods.LOWORD(lParam);
             var y = NativeMethods.HIWORD(lParam);
             var delta = NativeMethods.HIWORD(wParam);
-            var flags = NativeMethods.LOWORD(wParam);
+            var flags_ = NativeMethods.LOWORD(wParam);
+            uint flags = 0;
+            if ((wParam & NativeMethods.MK_CONTROL)>0)
+                flags |= (int)mbMouseFlags.MB_CONTROL;
+            if ((wParam & NativeMethods.MK_SHIFT)>0)
+                flags |= (int)mbMouseFlags.MB_SHIFT;
+            if ((wParam & NativeMethods.MK_LBUTTON)>0)
+                flags |= (int)mbMouseFlags.MB_LBUTTON;
+            if ((wParam & NativeMethods.MK_MBUTTON)>0)
+                flags |= (int)mbMouseFlags.MB_MBUTTON;
+            if ((wParam & NativeMethods.MK_RBUTTON)>0)
+                flags |= (int)mbMouseFlags.MB_RBUTTON;
             return (x, y, delta, flags);
         }
         void OnPaintCallback(IntPtr webView, IntPtr param, IntPtr hdc, int x, int y, int cx, int cy)

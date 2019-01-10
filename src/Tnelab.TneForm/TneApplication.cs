@@ -77,7 +77,6 @@ namespace Tnelab.HtmlView
                     }
                 }
                 NativeMethods.TranslateMessage(ref msg);
-
                 NativeMethods.DispatchMessage(ref msg);
             }
         }

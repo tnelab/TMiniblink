@@ -22,7 +22,7 @@
             <a class="caption_button" onmousedown="event.stopPropagation()" id="MaxButton" onclick="MaxWindow(this)" href="#">最大化</a>
             <a class="caption_button" onmousedown="event.stopPropagation()" onclick="MiniWindow()" href="#">最小化</a>
         </div>
-        <div class="window_client">@RenderBody()</div>
+        <div class="window_client" oncontextmenu="OnContextMenu(this,event)">@RenderBody()</div>
     </div>
 </body>
 </html>

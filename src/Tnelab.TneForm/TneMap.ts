@@ -11,7 +11,7 @@ namespace Tnelab {
     ////////////////////////////////////////////////////////////////////////////*/
     /////////////////////////////////////////////////////////////////////////全局
     //js通讯通道分类
-    enum TneQueryId { NativeMap = 1/*本机对象调用映射*/, RegisterNativeMap/*注册类型映射*/ = 2, DeleteNativeObject = 3/*删除本机对象*/, GetThisFormHashCode = 4 /*获取当前窗口ID*/, RunFunctionForTneForm=5/*获取只当TneForm的Html窗口对象*/};
+    enum TneQueryId { NativeMap = 1/*本机对象调用映射*/, RegisterNativeMap/*注册类型映射*/ = 2, DeleteNativeObject = 3/*删除本机对象*/, GetThisFormHashCode = 4 /*获取当前窗口ID*/, RunFunctionForTneForm=5/*在指定TneForm中执行function*/,ShowContextMenuForTneForm=6};
     //原始js通讯声明
     declare function mbQuery(msgId: number, request: string, onResponse: (id: number, response: string) => any): void;
     let GcMap = new Map<number, object>();
@@ -87,7 +87,12 @@ namespace Tnelab {
         let result=await TneQueryAsync(TneQueryId.RunFunctionForTneForm, request);
         return result;
     }
-    TM.RunFunctionForTneForm = RunFunctionForTneForm;
+    //在TneForm中显示上下文菜单
+    export async function ShowContextMenuForTneForm(theTneForm: TneFormBase, elm: Element, evt: MouseEvent, width: number, height: number, url: string): Promise<void> {
+        let request = JSON.stringify({ TneFormId: theTneForm.TneMapNativeObjectId, ElementY: Math.round(elm.getBoundingClientRect().top), X: evt.x, Y: evt.y,width,height, Url: url });
+        let result = await TneQueryAsync(TneQueryId.ShowContextMenuForTneForm, request);
+        return result;
+    }
     //var JsFunctionMap: Map<number, Function> = new Map<number, Function>();
     /////////////////////////////////////////////////////////////////////////JsNativeMap
     //装饰器，用于修饰本机映射

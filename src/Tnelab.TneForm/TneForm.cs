@@ -17,10 +17,12 @@ namespace Tnelab.HtmlView
     public enum StartPosition { Manual=1, CenterScreen=2, CenterParent=3 }
     public enum WindowState { Maximized=1, Normal=2 , Minimized=3 }
     public sealed class TneForm
-    {                
+    {
         public IntPtr Handle { get; internal set; }
         public event EventHandler<DragFilesEventArgs> DragFilesEvent;
         string title_ = "TneForm";
+        internal bool IsMenuForm { get; set; } = false;
+        internal event EventHandler<EventArgs> KillFocus;
         public string Title {
             get {
                 return title_;
@@ -29,7 +31,7 @@ namespace Tnelab.HtmlView
                 title_ = value;
                 if (this.Handle != IntPtr.Zero)
                 {
-                    NativeMethods.SetWindowTextW(this.Handle,value);
+                    NativeMethods.SetWindowTextW(this.Handle, value);
                 }
             }
         }
@@ -39,7 +41,7 @@ namespace Tnelab.HtmlView
             get
             {
                 if (this.Handle != IntPtr.Zero)
-                    x_= GetWindowRect().left;
+                    x_ = GetWindowRect().left;
                 return x_;
             }
             set {
@@ -55,8 +57,8 @@ namespace Tnelab.HtmlView
         public int Y {
             get
             {
-                if(this.Handle!=IntPtr.Zero)
-                    y_= GetWindowRect().top;
+                if (this.Handle != IntPtr.Zero)
+                    y_ = GetWindowRect().top;
                 return y_;
             }
             set
@@ -76,7 +78,7 @@ namespace Tnelab.HtmlView
                 if (this.Handle != IntPtr.Zero)
                 {
                     var rect = GetWindowRect();
-                    width_= rect.right - rect.left;
+                    width_ = rect.right - rect.left;
                 }
                 return width_;
             }
@@ -97,7 +99,7 @@ namespace Tnelab.HtmlView
                 if (this.Handle != IntPtr.Zero)
                 {
                     var rect = GetWindowRect();
-                    height_= rect.bottom - rect.top;
+                    height_ = rect.bottom - rect.top;
                 }
                 return height_;
             }
@@ -128,7 +130,7 @@ namespace Tnelab.HtmlView
                     }
                     else
                     {
-                        NativeMethods.SetWindowLong(this.Handle, NativeMethods.GWL_EXSTYLE, old | NativeMethods.WS_EX_TOOLWINDOW);                        
+                        NativeMethods.SetWindowLong(this.Handle, NativeMethods.GWL_EXSTYLE, old | NativeMethods.WS_EX_TOOLWINDOW);
                     }
                 }
             }
@@ -160,12 +162,12 @@ namespace Tnelab.HtmlView
         public int MinHeight { get; set; } = 0;
         string url_;
         public string Url {
-            get =>url_;
-            set
+            get => url_;
+            private set
             {
                 if (WebBrowser != null)
                 {
-                    TneApplication.UIInvoke(() => { 
+                    TneApplication.UIInvoke(() => {
                         WebBrowser.Url = value;
                     });
                 }
@@ -173,9 +175,9 @@ namespace Tnelab.HtmlView
             }
         }
         public StartPosition StartPosition { get; set; } = StartPosition.CenterParent;
-        WindowState WindowState_= WindowState.Normal;
+        WindowState WindowState_ = WindowState.Normal;
         public WindowState WindowState {
-            get =>WindowState_;
+            get => WindowState_;
             set {
                 if (this.IsDesdroyed_)
                     throw new Exception("窗口已经被释放");
@@ -195,7 +197,7 @@ namespace Tnelab.HtmlView
                 }
                 this.WindowState_ = value;
             }
-        } 
+        }
         TneForm parent_;
         public TneForm Parent
         {
@@ -209,13 +211,14 @@ namespace Tnelab.HtmlView
             }
         }
         NativeMethods.WinProcDelegate winProcDelegate_;
-        public TneForm()
+        public TneForm(string url)
         {
             this.WindowIndex_ = NewWindowIndex();
+            this.Url = url;
         }
         public void Close()
         {
-            TneApplication.UIInvoke(() => { 
+            TneApplication.UIInvoke(() => {
                 if (this.IsDesdroyed_)
                     throw new Exception("窗口已经被释放");
                 if (this.Handle == IntPtr.Zero)
@@ -284,6 +287,14 @@ namespace Tnelab.HtmlView
                 }
             }
         }
+        public void Active()
+        {
+            if (this.Handle == IntPtr.Zero)
+            {
+                CreateWindow();
+            }
+            NativeMethods.SetActiveWindow(this.Handle);
+        }
 
         string icon_;
         public string Icon
@@ -347,8 +358,11 @@ namespace Tnelab.HtmlView
                 //    NativeMethods.SetFocus(hWnd);
                 //    isHandled = false;
                 //    break;
-                //case NativeMethods.WM_KILLFOCUS:
-                //    break;
+                case NativeMethods.WM_KILLFOCUS:
+                    {
+                        this.KillFocus ?.Invoke(this,new EventArgs());
+                    }
+                    break;
                 case NativeMethods.WM_SETTINGCHANGE:
                     if (NativeMethods.IsZoomed(hWnd))
                     {
@@ -367,13 +381,14 @@ namespace Tnelab.HtmlView
                     if (this.Parent != null)
                     {
                         NativeMethods.EnableWindow(this.Parent.Handle, true);
-                        NativeMethods.SetForegroundWindow(this.Parent.Handle);
+                        //NativeMethods.SetForegroundWindow(this.Parent.Handle);
                     }
                     if (this == TneApplication.MainForm)
                         NativeMethods.PostQuitMessage(0);
                     else
                         result = NativeMethods.DefWindowProcW(hWnd, message, wParam, lParam);
                     this.IsDesdroyed_ = true;
+                    JsNativeMaper.This.RemoveBrowser(this.WebBrowser);
                     break;
                 case NativeMethods.WM_DROPFILES:
                     if (this.DragFilesEvent != null)

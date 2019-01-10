@@ -32,6 +32,7 @@ namespace Tnelab.HtmlView
     using PBYTE = IntPtr;
     using HDROP = IntPtr;
     using LPWSTR = IntPtr;
+    using PVOID = IntPtr;
 
     [SuppressUnmanagedCodeSecurity]
     static partial class NativeMethods
@@ -295,6 +296,7 @@ namespace Tnelab.HtmlView
         public const int WM_MBUTTONDOWN = 0x0207;
         public const int WM_MBUTTONUP = 0x0208;
         public const int WM_DROPFILES =                   0x0233;
+        public const int WM_CONTEXTMENU=                  0x007B;
 
         public const int CW_USEDEFAULT = unchecked((int)0x80000000);
 
@@ -333,6 +335,13 @@ namespace Tnelab.HtmlView
         public const int LR_CREATEDIBSECTION= 0x00002000;
         public const int LR_COPYFROMRESOURCE= 0x00004000;
         public const int LR_SHARED=           0x00008000;
+
+        public const int MK_LBUTTON = 0x0001;
+        public const int MK_RBUTTON = 0x0002;
+        public const int MK_SHIFT = 0x0004;
+        public const int MK_CONTROL = 0x0008;
+        public const int MK_MBUTTON = 0x0010;
+        public const int SPI_GETWORKAREA = 0x0030;
 
 
 
@@ -458,6 +467,10 @@ namespace Tnelab.HtmlView
         public static extern UINT DragQueryFileW(HDROP hDrop,UINT iFile,IntPtr lpszFile,UINT cch);
         [DllImport("Shell32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
         public static extern BOOL DragQueryPoint(HDROP hDrop,ref POINT ppt);
+        [DllImport("User32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        public static extern BOOL SystemParametersInfoW(UINT uiAction,UINT uiParam,PVOID pvParam,UINT fWinIni);
+        [DllImport("User32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
+        public static extern HWND GetForegroundWindow();
         public static ushort LOWORD(uint value)
         {
             return (ushort)(value & 0xFFFF);

@@ -61,10 +61,10 @@ namespace Tnelab.HtmlView
             var rect = new NativeMethods.RECT();
             NativeMethods.GetWindowRect(parentHandle, out rect);
             //zmg
-            webView_ = wkeCreateWebWindow(wkeWindowType.WKE_WINDOW_TYPE_TRANSPARENT, parentHandle, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);            
+            webView_ = wkeCreateWebView();// (wkeWindowType.WKE_WINDOW_TYPE_TRANSPARENT, parentHandle, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);            
             wkeSetHandle(webView_,parentHandle);
-            //wkeSetTransparent(webView_, true);
-            //wkeResize(webView_,rect.right-rect.left,rect.bottom-rect.top);
+            wkeSetTransparent(webView_, true);
+            wkeResize(webView_,rect.right-rect.left,rect.bottom-rect.top);
 
             this.paintUpdatedCallback_ = this.OnPaintCallback;
             wkeOnPaintUpdated(webView_, this.paintUpdatedCallback_, IntPtr.Zero);
@@ -103,6 +103,13 @@ namespace Tnelab.HtmlView
                         isHandled = true;
                     }
                     break;
+                //case NativeMethods.WM_CONTEXTMENU:
+                //    {
+                //        var (x, y, delta, flags) = GetMouseMsgInfo(lParam, wParam);
+                //        //wkeFireContextMenuEvent(this.webView_, x, y, flags);
+                //        isHandled = true;
+                //    }
+                //    break;
                 case NativeMethods.WM_MOUSEWHEEL:
                     {
                         OnMouseWheel(lParam, wParam);
@@ -127,10 +134,17 @@ namespace Tnelab.HtmlView
                         //else if (msg == NativeMethods.WM_LBUTTONUP || msg == NativeMethods.WM_MBUTTONUP || msg == NativeMethods.WM_RBUTTONUP)
                         //{
                         //    NativeMethods.ReleaseCapture();
-                        //}                        
+                        //}
                         var (x, y, delta, flags) = GetMouseMsgInfo(lParam, wParam);
                         wkeFireMouseEvent(webView_, msg, x, y, flags);
-                        isHandled = true;
+                        if (msg == NativeMethods.WM_RBUTTONUP)
+                        {
+                            isHandled = false;
+                        }
+                        else
+                        {
+                            isHandled = true;
+                        }
                     }
                     break;
                 case NativeMethods.WM_KEYDOWN:
@@ -181,7 +195,7 @@ namespace Tnelab.HtmlView
                     break;
                 case NativeMethods.WM_KILLFOCUS:
                     wkeKillFocus(WebView);
-                    isHandled = true;
+                    isHandled = false;
                     break;
                 case NativeMethods.WM_IME_STARTCOMPOSITION:
                     {
@@ -236,7 +250,18 @@ namespace Tnelab.HtmlView
             var x = NativeMethods.LOWORD(lParam);
             var y = NativeMethods.HIWORD(lParam);
             var delta = NativeMethods.HIWORD(wParam);
-            var flags = NativeMethods.LOWORD(wParam);
+            var flags_ = NativeMethods.LOWORD(wParam);
+            uint flags = 0;
+            if ((wParam & NativeMethods.MK_CONTROL) > 0)
+                flags |= (int)wkeMouseFlags.CONTROL;
+            if ((wParam & NativeMethods.MK_SHIFT) > 0)
+                flags |= (int)wkeMouseFlags.SHIFT;
+            if ((wParam & NativeMethods.MK_LBUTTON) > 0)
+                flags |= (int)wkeMouseFlags.LBUTTON;
+            if ((wParam & NativeMethods.MK_MBUTTON) > 0)
+                flags |= (int)wkeMouseFlags.MBUTTON;
+            if ((wParam & NativeMethods.MK_RBUTTON) > 0)
+                flags |= (int)wkeMouseFlags.RBUTTON;
             return (x, y, delta, flags);
         }
         WkeCursorInfoType cursorInfoType_;

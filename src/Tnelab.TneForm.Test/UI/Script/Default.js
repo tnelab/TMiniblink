@@ -14,8 +14,7 @@ let eventTest = function (sender, args) {
 function InvokeTest() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            newForm = yield new TMiniblink.TneForm().Ready();
-            yield (newForm.Url = "Tne://Tnelab.TneForm.Test/ui/default.html?cmd=测试");
+            newForm = yield new TMiniblink.TneForm("Tne://Tnelab.TneForm.Test/ui/default.html?cmd=测试").Ready();
             yield newForm.Show();
         }
         catch (error) {

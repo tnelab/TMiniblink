@@ -10,7 +10,7 @@ using static Tnelab.MiniBlinkV.NativeMethods;
 using System.Runtime.InteropServices;
 namespace Tnelab.HtmlView
 {
-    enum TneQueryId { NativeMap = 1, RegisterNativeMap = 2, DeleteNativeObject = 3 ,GetThisFormHashCode=4, RunFunctionForTneForm = 5}
+    enum TneQueryId { NativeMap = 1, RegisterNativeMap = 2, DeleteNativeObject = 3 ,GetThisFormHashCode=4, RunFunctionForTneForm = 5, ShowContextMenuForTneForm =6}
     interface IJsNativeMaper
     {
         long AddBrowser(IWebBrowser browser, Func<object> GetParentControl);
@@ -75,6 +75,54 @@ namespace Tnelab.HtmlView
             info.DestroyNativeObject(hashCode,false);
             browser.ResponseJsQuery(args.WebView, args.QueryId, args.CustomMsg, "OK");
         }
+        void OnShowContextMenu(IWebBrowser webbrowser, JsQueryEventArgs args)
+        {
+            var menuInfo = JsonConvert.DeserializeObject<ShowContextMenuForTneFormInfo>(args.Request);
+            var wbinfo = GetBrowserInfo(webbrowser);
+            var tneForm = wbinfo.GetNativeObject(menuInfo.TneFormId, false) as TneForm;
+            var menuForm = new TneForm(menuInfo.Url);
+            menuForm.SizeAble = false;
+            menuForm.ShowInTaskBar = false;
+            menuForm.StartPosition = StartPosition.Manual;
+            menuForm.KillFocus += (sender, eventArgs) =>
+            {
+                menuForm.Close();
+            };
+            menuForm.Parent = tneForm;
+            var x = tneForm.X + menuInfo.X;
+            var y = tneForm.Y + menuInfo.Y;
+            RECT rect = new RECT();
+            var rectPtr = Marshal.AllocHGlobal(Marshal.SizeOf<RECT>());
+            Marshal.StructureToPtr(rect, rectPtr, true);
+            NativeMethods.SystemParametersInfoW(NativeMethods.SPI_GETWORKAREA, 0, rectPtr, 0);
+            rect = Marshal.PtrToStructure<RECT>(rectPtr);
+            Marshal.FreeHGlobal(rectPtr);
+            int cx = rect.right - rect.left;
+            int cy = rect.bottom - rect.top;
+            if (x + menuInfo.Width > cx)
+            {
+                x = x - menuInfo.Width;
+                if (x < 0)
+                {
+                    x = 0;
+                }
+            }
+            if (y + menuInfo.Height > cy)
+            {
+                y = y - menuInfo.Height;
+                if (y < 0)
+                {
+                    y = 0;
+                }
+            }
+
+            menuForm.X = x;
+            menuForm.Y = y;
+            menuForm.Width = menuInfo.Width;
+            menuForm.Height = menuInfo.Height;
+            menuForm.Show();
+            webbrowser.ResponseJsQuery(webbrowser.WebView, args.QueryId, args.CustomMsg, "OK");
+        }
         //JsNativeMaper() { }
         object webBrowserDicLock_ = new object();
         public long AddBrowser(IWebBrowser browser, Func<object> getParentControl)
@@ -109,6 +157,11 @@ namespace Tnelab.HtmlView
                             var tneForm=wbinfo.GetNativeObject(runInfo.TneFormId,false) as TneForm;
                             var result=tneForm.WebBrowser.RunJs($"return ({runInfo.Function})({runInfo.Arg})");
                             wb.ResponseJsQuery(args.WebView, args.QueryId, args.CustomMsg, result);
+                        }
+                        break;
+                    case TneQueryId.ShowContextMenuForTneForm:
+                        {
+                            OnShowContextMenu(webBrowser as IWebBrowser,args);
                         }
                         break;
                     default:

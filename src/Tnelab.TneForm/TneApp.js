@@ -32,7 +32,8 @@ var Tnelab;
         TneQueryId[TneQueryId["RegisterNativeMap"] = 2] = "RegisterNativeMap";
         TneQueryId[TneQueryId["DeleteNativeObject"] = 3] = "DeleteNativeObject"; /*删除本机对象*/
         TneQueryId[TneQueryId["GetThisFormHashCode"] = 4] = "GetThisFormHashCode"; /*获取当前窗口ID*/
-        TneQueryId[TneQueryId["RunFunctionForTneForm"] = 5] = "RunFunctionForTneForm"; /*获取只当TneForm的Html窗口对象*/
+        TneQueryId[TneQueryId["RunFunctionForTneForm"] = 5] = "RunFunctionForTneForm"; /*在指定TneForm中执行function*/
+        TneQueryId[TneQueryId["ShowContextMenuForTneForm"] = 6] = "ShowContextMenuForTneForm";
     })(TneQueryId || (TneQueryId = {}));
     ;
     let GcMap = new Map();
@@ -116,7 +117,15 @@ var Tnelab;
         });
     }
     Tnelab.RunFunctionForTneForm = RunFunctionForTneForm;
-    TM.RunFunctionForTneForm = RunFunctionForTneForm;
+    //在TneForm中显示上下文菜单
+    function ShowContextMenuForTneForm(theTneForm, elm, evt, width, height, url) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let request = JSON.stringify({ TneFormId: theTneForm.TneMapNativeObjectId, ElementY: Math.round(elm.getBoundingClientRect().top), X: evt.x, Y: evt.y, width, height, Url: url });
+            let result = yield TneQueryAsync(TneQueryId.ShowContextMenuForTneForm, request);
+            return result;
+        });
+    }
+    Tnelab.ShowContextMenuForTneForm = ShowContextMenuForTneForm;
     //var JsFunctionMap: Map<number, Function> = new Map<number, Function>();
     /////////////////////////////////////////////////////////////////////////JsNativeMap
     //装饰器，用于修饰本机映射
@@ -752,6 +761,11 @@ var Tnelab;
                 return yield Tnelab.RunFunctionForTneForm(this, json, func);
             });
         }
+        ShowContextMenu(elm, evt, width, height, url) {
+            return __awaiter(this, void 0, void 0, function* () {
+                return yield Tnelab.ShowContextMenuForTneForm(this, elm, evt, width, height, url);
+            });
+        }
     }
     Tnelab.TneFormBase = TneFormBase;
 })(Tnelab || (Tnelab = {}));
@@ -761,7 +775,7 @@ var Tnelab;
 var TMiniblink;
 (function (TMiniblink) {
     let TneForm = class TneForm extends Tnelab.TneFormBase {
-        constructor() { super(arguments); }
+        constructor(_url) { super(arguments); }
         get DragFilesEvent() { return undefined; }
         get Handle() { return undefined; }
         get Title() { return undefined; }
@@ -783,7 +797,6 @@ var TMiniblink;
         get MinWidth() { return undefined; }
         set MinHeight(value) { }
         get MinHeight() { return undefined; }
-        set Url(value) { }
         get Url() { return undefined; }
         set StartPosition(value) { }
         get StartPosition() { return undefined; }
@@ -800,6 +813,7 @@ var TMiniblink;
         Show() { }
         Hide() { }
         Move() { }
+        Active() { }
         Equals(_obj) { return undefined; }
         static Equals_(_objA, _objB) { return undefined; }
         GetHashCode() { return undefined; }
@@ -838,9 +852,6 @@ var TMiniblink;
         Tnelab.InvokeInfo(undefined, "System.Int32")
     ], TneForm.prototype, "MinHeight", null);
     __decorate([
-        Tnelab.InvokeInfo(undefined, "System.String")
-    ], TneForm.prototype, "Url", null);
-    __decorate([
         Tnelab.InvokeInfo(undefined, "Tnelab.HtmlView.StartPosition")
     ], TneForm.prototype, "StartPosition", null);
     __decorate([
@@ -871,6 +882,9 @@ var TMiniblink;
         Tnelab.InvokeInfo("Move")
     ], TneForm.prototype, "Move", null);
     __decorate([
+        Tnelab.InvokeInfo("Active")
+    ], TneForm.prototype, "Active", null);
+    __decorate([
         Tnelab.InvokeInfo("Equals", "System.Object")
     ], TneForm.prototype, "Equals", null);
     __decorate([
@@ -889,7 +903,7 @@ var TMiniblink;
         Tnelab.InvokeInfo("ReferenceEquals", "System.Object", "System.Object")
     ], TneForm, "ReferenceEquals", null);
     TneForm = __decorate([
-        Tnelab.ConstructorInfo(),
+        Tnelab.ConstructorInfo("System.String"),
         Tnelab.ToMap("TMiniblink.TneForm", "Tnelab.HtmlView.TneForm")
     ], TneForm);
     TMiniblink.TneForm = TneForm;

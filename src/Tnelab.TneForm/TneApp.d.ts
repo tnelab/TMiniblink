@@ -2,6 +2,7 @@ declare let ThisForm: TMiniblink.TneForm;
 declare namespace Tnelab {
     function RegisterNativeMapAsync(nativeTypeName: any, jsTypeName: any): Promise<void>;
     function RunFunctionForTneForm(theTneForm: TneFormBase, json: string, func: (json: string) => Promise<string>): Promise<string>;
+    function ShowContextMenuForTneForm(theTneForm: TneFormBase, elm: Element, evt: MouseEvent, width: number, height: number, url: string): Promise<void>;
     function InvokeInfo(nativeName: string, ...args: string[]): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
     function IsEvent(type: string): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
     class JsMapInfo {
@@ -43,6 +44,7 @@ declare namespace Tnelab {
     class TneFormBase extends NativeObject {
         RunFunc(func: () => Promise<string>): any;
         RunFunc(func: (json: string) => Promise<string>, json: string): any;
+        ShowContextMenu(elm: Element, evt: MouseEvent, width: number, height: number, url: string): Promise<void>;
     }
 }
 declare namespace TMiniblink {
@@ -59,7 +61,7 @@ declare namespace TMiniblink {
         TopMost: boolean;
         MinWidth: number;
         MinHeight: number;
-        Url: string;
+        readonly Url: string;
         StartPosition: any;
         WindowState: any;
         Parent: any;
@@ -70,12 +72,13 @@ declare namespace TMiniblink {
         Show(): void;
         Hide(): void;
         Move(): void;
+        Active(): void;
         Equals(_obj: any): boolean;
         static Equals_(_objA: any, _objB: any): boolean;
         GetHashCode(): number;
         GetType(): any;
         static ReferenceEquals(_objA: any, _objB: any): boolean;
         ToString(): string;
-        constructor();
+        constructor(_url: string);
     }
 }

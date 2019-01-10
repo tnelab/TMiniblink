@@ -19,15 +19,18 @@
     <None Remove="Default.js" />
     <None Remove="default.png" />
     <None Remove="Default.ts" />
+    <None Remove="UI\css\ContextMenu.css" />
     <None Remove="UI\css\window.css" />
     <None Remove="UI\Default.html" />
     <None Remove="UI\img\bg.jpg" />
     <None Remove="UI\Script\window.js" />
     <None Remove="UI\Script\window.ts" />
+    <None Remove="UI\TestContextMenu.html" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="default.png" />
+    <EmbeddedResource Include="UI\css\ContextMenu.css" />
     <EmbeddedResource Include="UI\css\window.css" />
     <EmbeddedResource Include="UI\img\bg.jpg" />
     <EmbeddedResource Include="UI\Script\Default.js" />
@@ -35,14 +38,8 @@
       <Generator></Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\Script\window.js" />
+    <EmbeddedResource Include="UI\TestContextMenu.html" />
     <TypeScriptCompile Include="UI\Script\window.ts" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NSubsys" Version="0.7.0-build20180604-0047">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -86,6 +83,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.0" PrivateAssets="All" />
+    <PackageReference Include="NSubsys" Version="0.7.0-build20180604-0047">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets') AND '$(EnableTypeScriptNuGetTarget)' != 'true'" />
 

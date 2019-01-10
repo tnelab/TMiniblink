@@ -2,7 +2,7 @@
 ///<reference path="./TneMap.ts"/>
 ///<reference path="./TneFormBase.ts"/>
 namespace TMiniblink{
-	@Tnelab.ConstructorInfo()
+	@Tnelab.ConstructorInfo("System.String")
 	@Tnelab.ToMap("TMiniblink.TneForm","Tnelab.HtmlView.TneForm")
 	export class TneForm extends Tnelab.TneFormBase {
 		@Tnelab.IsEvent("System.EventHandler<Tnelab.HtmlView.DragFilesEventArgs>")
@@ -36,8 +36,6 @@ namespace TMiniblink{
 		@Tnelab.InvokeInfo(undefined,"System.Int32")
 		public  set MinHeight(value:number) { }
 		public  get MinHeight():number { return undefined; }
-		@Tnelab.InvokeInfo(undefined,"System.String")
-		public  set Url(value:string) { }
 		public  get Url():string { return undefined; }
 		@Tnelab.InvokeInfo(undefined,"Tnelab.HtmlView.StartPosition")
 		public  set StartPosition(value:any) { }
@@ -64,6 +62,8 @@ namespace TMiniblink{
 		public  Hide():void {}
 		@Tnelab.InvokeInfo("Move")
 		public  Move():void {}
+		@Tnelab.InvokeInfo("Active")
+		public  Active():void {}
 		@Tnelab.InvokeInfo("Equals", "System.Object")
 		public  Equals(_obj:any):boolean {return undefined;}
 		@Tnelab.InvokeInfo("Equals_", "System.Object","System.Object")
@@ -76,7 +76,7 @@ namespace TMiniblink{
 		public static ReferenceEquals(_objA:any,_objB:any):boolean {return undefined;}
 		@Tnelab.InvokeInfo("ToString")
 		public  ToString():string {return undefined;}
-		public constructor() {super(arguments);}
+		public constructor(_url:string) {super(arguments);}
 	}
 	Tnelab.RegisterNativeMapAsync("Tnelab.HtmlView.TneForm","TMiniblink.TneForm");
 }

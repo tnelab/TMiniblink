@@ -10,12 +10,11 @@ namespace Tnelab.HtmlView.Test
         static void Main(string[] args)
         {
             TneApplication.SetToVip();
-            var f1 = new TneForm();
+            var f1 = new TneForm("Tne://Tnelab.TneForm.Test/ui/default.html?cmd=测试");
             f1.Icon = "default.png";
             //f1.WindowState = WindowState.Maximized;
             //f1.StartPosition = StartPosition.CenterParent;
             //f1.Url = "file:///E:/workspace/Tnelab/src/Tnelab.TneForm.Test/bin/Debug/netcoreapp2.1/UI/Default.html";
-            f1.Url = "Tne://Tnelab.TneForm.Test/ui/default.html?cmd=测试";
             //f1.Url = "https://www.baidu.com";
             //f1.Url = "https://www.html5tricks.com/demo/html5-canvas-particle-effect/index.html";
             //f1.Url = "http://www.sina.com.cn";

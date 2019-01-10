@@ -5,8 +5,7 @@ let eventTest = function (sender, args) {
 }
 async function InvokeTest() {
     try {
-        newForm = await new TMiniblink.TneForm().Ready();
-        await (newForm.Url = "Tne://Tnelab.TneForm.Test/ui/default.html?cmd=测试");
+        newForm = await new TMiniblink.TneForm("Tne://Tnelab.TneForm.Test/ui/default.html?cmd=测试").Ready();
         await newForm.Show();
     }
     catch (error) {

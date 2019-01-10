@@ -17,6 +17,16 @@ namespace Tnelab.HtmlView
         public string Arg { get; set; }
         public string Function { get; set; }
     }
+    class ShowContextMenuForTneFormInfo
+    {
+        public long TneFormId { get; set; }
+        public int ElementY { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public string Url { get; set; }
+    }
     class MapDataInfo
     {
         public MapDataType DataType { get; set; }
