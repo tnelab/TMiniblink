@@ -75,6 +75,26 @@ namespace Tnelab.HtmlView
 
             #endregion
         }
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        public struct NOTIFYICONDATA
+        {
+            public int cbSize;
+            public IntPtr hWnd;
+            public int uID;
+            public int uFlags;
+            public int uCallbackMessage;
+            public IntPtr hIcon;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst =128)]
+            public string szTip;
+            public int dwState;
+            public int dwStateMask;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x100)]
+            public string szInfo;
+            public int uTimeoutOrVersion;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x40)]
+            public string szInfoTitle;
+            public int dwInfoFlags;
+        }
         [StructLayout(LayoutKind.Sequential,CharSet = CharSet.Unicode)]
         public struct WNDCLASS
         {
@@ -343,6 +363,18 @@ namespace Tnelab.HtmlView
         public const int MK_MBUTTON = 0x0010;
         public const int SPI_GETWORKAREA = 0x0030;
 
+        public const int NIM_ADD = 0x00000000;
+        public const int NIM_MODIFY = 0x00000001;
+        public const int NIM_DELETE = 0x00000002;
+        public const int NIM_SETFOCUS = 0x00000003;
+        public const int NIM_SETVERSION = 0x00000004;
+
+        public const int NIF_MESSAGE = 0x00000001;
+        public const int NIF_ICON = 0x00000002;
+        public const int NIF_TIP = 0x00000004;
+        public const int NIF_STATE = 0x00000008;
+        public const int NIF_INFO = 0x00000010;
+
 
 
         [DllImport("Kernel32.dll", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
@@ -469,6 +501,9 @@ namespace Tnelab.HtmlView
         public static extern BOOL DragQueryPoint(HDROP hDrop,ref POINT ppt);
         [DllImport("User32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
         public static extern BOOL SystemParametersInfoW(UINT uiAction,UINT uiParam,PVOID pvParam,UINT fWinIni);
+        [DllImport("Shell32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true,CharSet =CharSet.Unicode)]
+        [return:MarshalAs(UnmanagedType.I1)]
+        public static extern BOOL Shell_NotifyIcon(DWORD dwMessage,IntPtr lpdata);
         [DllImport("User32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
         public static extern HWND GetForegroundWindow();
         public static ushort LOWORD(uint value)

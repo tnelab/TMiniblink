@@ -11,6 +11,7 @@ namespace Tnelab.HtmlView.Test
         {
             TneApplication.SetToVip();
             var f1 = new TneForm("Tne://Tnelab.TneForm.Test/ui/default.html?cmd=测试");
+            //var f1 = new TneForm("http://m.cdsgnk.cn/"); 
             f1.Icon = "default.png";
             //f1.WindowState = WindowState.Maximized;
             //f1.StartPosition = StartPosition.CenterParent;

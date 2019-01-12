@@ -474,6 +474,10 @@ namespace Tnelab.HtmlView
                     {
                         obj = Enum.Parse(nativeType, dataInfo.Value.ToString());
                     }
+                    else if (nativeType == typeof(IntPtr))
+                    {
+                        obj = JsonConvert.DeserializeObject(dataInfo.Value.ToString(), nativeType);
+                    }
                     else
                     {
                         obj = Convert.ChangeType(dataInfo.Value, nativeType);
@@ -735,7 +739,7 @@ namespace Tnelab.HtmlView
             var inAction=delegeateInfo.GetType().GetMethod("Invoke");
             Delegate handler = Delegate.CreateDelegate(eventInfo.EventHandlerType,args[0], inAction);
             eventInfo.AddEventHandler(obj,handler);
-            JsNativeInvokeHandleFactory.This.AddToHashDic(mapInfo.Args[0].Value.ToString(), handler);
+            JsNativeInvokeHandleFactory.This.AddToHashDic(mapInfo.Args[0].Value.ToString()+mapInfo.Id.ToString(), handler);
             return null;
         }
     }

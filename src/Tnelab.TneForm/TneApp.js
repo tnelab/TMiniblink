@@ -120,7 +120,7 @@ var Tnelab;
     //在TneForm中显示上下文菜单
     function ShowContextMenuForTneForm(theTneForm, elm, evt, width, height, url) {
         return __awaiter(this, void 0, void 0, function* () {
-            let request = JSON.stringify({ TneFormId: theTneForm.TneMapNativeObjectId, ElementY: Math.round(elm.getBoundingClientRect().top), X: evt.x, Y: evt.y, width, height, Url: url });
+            let request = JSON.stringify({ TneFormId: theTneForm.TneMapNativeObjectId, ElementY: elm === undefined ? -1 : Math.round(elm.getBoundingClientRect().top), X: evt === undefined ? -1 : evt.x, Y: evt === undefined ? -1 : evt.y, width, height, Url: url });
             let result = yield TneQueryAsync(TneQueryId.ShowContextMenuForTneForm, request);
             return result;
         });
@@ -752,6 +752,90 @@ var Tnelab;
     document.addEventListener("DOMContentLoaded", dom_ready_, true);
     /////////////////////////////////////////////////////////////////////////////////JSON
 })(Tnelab || (Tnelab = {}));
+//此代码由机器生成，请不要手动修改
+///<reference path="./TneMap.ts"/>
+var TMiniblink;
+(function (TMiniblink) {
+    let NotifyIcon = class NotifyIcon extends Tnelab.NativeObject {
+        constructor(_hwnd, _icon) { super(arguments); }
+        get Click() { return undefined; }
+        get ContextMenu() { return undefined; }
+        set Tip(value) { }
+        get Tip() { return undefined; }
+        set Info(value) { }
+        get Info() { return undefined; }
+        set Icon(value) { }
+        get Icon() { return undefined; }
+        Show() { }
+        Hide() { }
+        Equals(_obj) { return undefined; }
+        static Equals_(_objA, _objB) { return undefined; }
+        GetHashCode() { return undefined; }
+        GetType() { return undefined; }
+        static ReferenceEquals(_objA, _objB) { return undefined; }
+        ToString() { return undefined; }
+    };
+    __decorate([
+        Tnelab.IsEvent("System.EventHandler<System.EventArgs>")
+    ], NotifyIcon.prototype, "Click", null);
+    __decorate([
+        Tnelab.IsEvent("System.EventHandler<System.EventArgs>")
+    ], NotifyIcon.prototype, "ContextMenu", null);
+    __decorate([
+        Tnelab.InvokeInfo(undefined, "System.String")
+    ], NotifyIcon.prototype, "Tip", null);
+    __decorate([
+        Tnelab.InvokeInfo(undefined, "System.String")
+    ], NotifyIcon.prototype, "Info", null);
+    __decorate([
+        Tnelab.InvokeInfo(undefined, "System.String")
+    ], NotifyIcon.prototype, "Icon", null);
+    __decorate([
+        Tnelab.InvokeInfo("Show")
+    ], NotifyIcon.prototype, "Show", null);
+    __decorate([
+        Tnelab.InvokeInfo("Hide")
+    ], NotifyIcon.prototype, "Hide", null);
+    __decorate([
+        Tnelab.InvokeInfo("Equals", "System.Object")
+    ], NotifyIcon.prototype, "Equals", null);
+    __decorate([
+        Tnelab.InvokeInfo("GetHashCode")
+    ], NotifyIcon.prototype, "GetHashCode", null);
+    __decorate([
+        Tnelab.InvokeInfo("GetType")
+    ], NotifyIcon.prototype, "GetType", null);
+    __decorate([
+        Tnelab.InvokeInfo("ToString")
+    ], NotifyIcon.prototype, "ToString", null);
+    __decorate([
+        Tnelab.InvokeInfo("Equals_", "System.Object", "System.Object")
+    ], NotifyIcon, "Equals_", null);
+    __decorate([
+        Tnelab.InvokeInfo("ReferenceEquals", "System.Object", "System.Object")
+    ], NotifyIcon, "ReferenceEquals", null);
+    NotifyIcon = __decorate([
+        Tnelab.ConstructorInfo("System.IntPtr", "System.String"),
+        Tnelab.ToMap("TMiniblink.NotifyIcon", "Tnelab.HtmlView.NotifyIcon")
+    ], NotifyIcon);
+    TMiniblink.NotifyIcon = NotifyIcon;
+    Tnelab.RegisterNativeMapAsync("Tnelab.HtmlView.NotifyIcon", "TMiniblink.NotifyIcon");
+})(TMiniblink || (TMiniblink = {}));
+var TMiniblink;
+(function (TMiniblink) {
+    let StartPosition;
+    (function (StartPosition) {
+        StartPosition[StartPosition["Manual"] = 1] = "Manual";
+        StartPosition[StartPosition["CenterScreen"] = 2] = "CenterScreen";
+        StartPosition[StartPosition["CenterParent"] = 3] = "CenterParent";
+    })(StartPosition = TMiniblink.StartPosition || (TMiniblink.StartPosition = {}));
+    let WindowState;
+    (function (WindowState) {
+        WindowState[WindowState["Maximized"] = 1] = "Maximized";
+        WindowState[WindowState["Normal"] = 2] = "Normal";
+        WindowState[WindowState["Minimized"] = 3] = "Minimized";
+    })(WindowState = TMiniblink.WindowState || (TMiniblink.WindowState = {}));
+})(TMiniblink || (TMiniblink = {}));
 ///<reference path="./TneMap.ts"/>
 var Tnelab;
 (function (Tnelab) {
@@ -769,7 +853,7 @@ var Tnelab;
     }
     Tnelab.TneFormBase = TneFormBase;
 })(Tnelab || (Tnelab = {}));
-//此代码由机器生成，请不要手动修改
+//�˴����ɻ������ɣ��벻Ҫ�ֶ��޸�
 ///<reference path="./TneMap.ts"/>
 ///<reference path="./TneFormBase.ts"/>
 var TMiniblink;

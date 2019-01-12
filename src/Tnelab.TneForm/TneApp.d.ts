@@ -40,6 +40,36 @@ declare namespace Tnelab {
         static TypeList: Array<string>;
     }
 }
+declare namespace TMiniblink {
+    class NotifyIcon extends Tnelab.NativeObject {
+        readonly Click: Tnelab.TneEvent;
+        readonly ContextMenu: Tnelab.TneEvent;
+        Tip: string;
+        Info: string;
+        Icon: string;
+        Show(): void;
+        Hide(): void;
+        Equals(_obj: any): boolean;
+        static Equals_(_objA: any, _objB: any): boolean;
+        GetHashCode(): number;
+        GetType(): any;
+        static ReferenceEquals(_objA: any, _objB: any): boolean;
+        ToString(): string;
+        constructor(_hwnd: any, _icon: string);
+    }
+}
+declare namespace TMiniblink {
+    enum StartPosition {
+        Manual = 1,
+        CenterScreen = 2,
+        CenterParent = 3
+    }
+    enum WindowState {
+        Maximized = 1,
+        Normal = 2,
+        Minimized = 3
+    }
+}
 declare namespace Tnelab {
     class TneFormBase extends NativeObject {
         RunFunc(func: () => Promise<string>): any;

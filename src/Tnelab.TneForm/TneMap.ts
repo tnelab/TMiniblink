@@ -89,7 +89,7 @@ namespace Tnelab {
     }
     //在TneForm中显示上下文菜单
     export async function ShowContextMenuForTneForm(theTneForm: TneFormBase, elm: Element, evt: MouseEvent, width: number, height: number, url: string): Promise<void> {
-        let request = JSON.stringify({ TneFormId: theTneForm.TneMapNativeObjectId, ElementY: Math.round(elm.getBoundingClientRect().top), X: evt.x, Y: evt.y,width,height, Url: url });
+        let request = JSON.stringify({ TneFormId: theTneForm.TneMapNativeObjectId, ElementY: elm === undefined ? -1 : Math.round(elm.getBoundingClientRect().top), X: evt === undefined ? -1 : evt.x, Y: evt === undefined ? -1 :evt.y,width,height, Url: url });
         let result = await TneQueryAsync(TneQueryId.ShowContextMenuForTneForm, request);
         return result;
     }

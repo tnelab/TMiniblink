@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Web;
 
 namespace Tnelab.HtmlView
 {
@@ -29,7 +31,8 @@ namespace Tnelab.HtmlView
                 else
                     sb.Append(str[i++]);
             }
-            return sb.ToString();
+            var result= HttpUtility.UrlDecode(sb.ToString());
+            return result;
         }
     }
 }

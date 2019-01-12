@@ -293,7 +293,9 @@ namespace Tnelab.HtmlView
             {
                 CreateWindow();
             }
+            this.WindowState = WindowState.Normal;
             NativeMethods.SetActiveWindow(this.Handle);
+            NativeMethods.SetForegroundWindow(this.Handle);
         }
 
         string icon_;
@@ -358,6 +360,20 @@ namespace Tnelab.HtmlView
                 //    NativeMethods.SetFocus(hWnd);
                 //    isHandled = false;
                 //    break;
+                case NotifyIcon.WM_NOTIFYICON:
+                    {
+                        var notifyicon = NotifyIcon.GetById((int)wParam);
+                        switch (lParam)
+                        {
+                            case NativeMethods.WM_LBUTTONDOWN:
+                                notifyicon.OnClick(this, new EventArgs());
+                                break;
+                            case NativeMethods.WM_RBUTTONDOWN:
+                                notifyicon.OnContextMenu(this,new EventArgs());
+                                break;
+                        }
+                    }
+                    break;
                 case NativeMethods.WM_KILLFOCUS:
                     {
                         this.KillFocus ?.Invoke(this,new EventArgs());

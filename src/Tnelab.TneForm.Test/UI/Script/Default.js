@@ -14,19 +14,44 @@ let eventTest = function (sender, args) {
 function InvokeTest() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            newForm = yield new TMiniblink.TneForm("Tne://Tnelab.TneForm.Test/ui/default.html?cmd=测试").Ready();
-            yield newForm.Show();
+            //newForm = await new TMiniblink.TneForm("Tne://Tnelab.TneForm.Test/ui/default.html?cmd=测试").Ready();
+            //await newForm.Show();
+            yield showNotifyIcon();
+            alert("HI");
         }
         catch (error) {
             console.log(error);
         }
     });
 }
+let notifyicon;
+function showNotifyIcon() {
+    return __awaiter(this, void 0, void 0, function* () {
+        let hwnd = yield ThisForm.Handle;
+        notifyicon = yield new TMiniblink.NotifyIcon(hwnd, "default.png").Ready();
+        yield (notifyicon.Tip = "你好世界");
+        yield (notifyicon.Info = "程序已经隐藏到托盘。");
+        let clickEvent = yield notifyicon.Click;
+        yield clickEvent.AddListener(function (sender, args) {
+            return __awaiter(this, void 0, void 0, function* () {
+                let form = yield sender;
+                yield form.Active();
+            });
+        });
+        let contextMenuEvent = yield notifyicon.ContextMenu;
+        yield contextMenuEvent.AddListener(function (sender, args) {
+            return __awaiter(this, void 0, void 0, function* () {
+                let form = yield sender;
+                yield (form.ShowContextMenu(undefined, undefined, 180, 100, "Tne://Tnelab.TneForm.Test/ui/TestContextMenu.html"));
+            });
+        });
+        yield notifyicon.Show();
+    });
+}
 function callOtherForm() {
     return __awaiter(this, void 0, void 0, function* () {
-        let event = yield ThisForm.DragFilesEvent;
-        yield event.RemoveListener(eventTest);
-        alert("HI2");
+        yield (notifyicon.Info = "你好啊");
+        alert("HI");
     });
 }
 function showId() {

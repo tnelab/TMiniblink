@@ -10,19 +10,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 function MaxWindow(elm) {
     return __awaiter(this, void 0, void 0, function* () {
         let old = yield ThisForm.WindowState;
-        let state = old === 1 ? 2 : 1;
+        let state = old === TMiniblink.WindowState.Maximized ? TMiniblink.WindowState.Normal : TMiniblink.WindowState.Maximized;
         yield (ThisForm.WindowState = state);
-        if (state === 1) {
+        if (state === TMiniblink.WindowState.Maximized) {
             elm.innerText = "恢复";
         }
-        else if (state === 2) {
+        else if (state === TMiniblink.WindowState.Normal) {
             elm.innerText = "最大化";
         }
     });
 }
 function MiniWindow() {
     return __awaiter(this, void 0, void 0, function* () {
-        yield (ThisForm.WindowState = 3);
+        yield (ThisForm.WindowState = TMiniblink.WindowState.Minimized);
     });
 }
 function MoveWindow() {

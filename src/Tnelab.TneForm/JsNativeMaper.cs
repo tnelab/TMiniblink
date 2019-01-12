@@ -84,6 +84,7 @@ namespace Tnelab.HtmlView
             menuForm.SizeAble = false;
             menuForm.ShowInTaskBar = false;
             menuForm.StartPosition = StartPosition.Manual;
+            menuForm.TopMost = true;
             menuForm.KillFocus += (sender, eventArgs) =>
             {
                 menuForm.Close();
@@ -91,6 +92,13 @@ namespace Tnelab.HtmlView
             menuForm.Parent = tneForm;
             var x = tneForm.X + menuInfo.X;
             var y = tneForm.Y + menuInfo.Y;
+            if (menuInfo.X == -1 && menuInfo.Y == -1)
+            {
+                var point = new NativeMethods.POINT();
+                NativeMethods.GetCursorPos(ref point);
+                x = point.x;
+                y = point.y;
+            }
             RECT rect = new RECT();
             var rectPtr = Marshal.AllocHGlobal(Marshal.SizeOf<RECT>());
             Marshal.StructureToPtr(rect, rectPtr, true);

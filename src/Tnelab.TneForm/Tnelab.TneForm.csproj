@@ -29,6 +29,8 @@
     <TypeScriptExperimentalDecorators>true</TypeScriptExperimentalDecorators>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="NotifyIcon.cs.ts" />
+    <None Remove="TMiniblinkTypes.ts" />
     <None Remove="TneApp.js" />
     <None Remove="TneForm.cs.ts" />
     <None Remove="TneFormBase.ts" />
@@ -39,6 +41,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <TypeScriptCompile Include="NotifyIcon.cs.ts" />
+    <TypeScriptCompile Include="TMiniblinkTypes.ts" />
     <TypeScriptCompile Include="TneForm.cs.ts" />
     <TypeScriptCompile Include="TneFormBase.ts" />
     <TypeScriptCompile Include="TneMap.ts" />
