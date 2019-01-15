@@ -3,19 +3,19 @@ let newForm: TMiniblink.TneForm;
 let eventTest = function (sender, args) {
     alert(args.Files.join(",") + ":X:" + args.X + ":Y:" + args.Y);
 }
-let ofn: TMiniblink.OpenFileDialog;
+let 文件选择对话框: TMiniblink.OpenFileDialog;
 async function InvokeTest() {
     try {
         //newForm = await new TMiniblink.TneForm("Tne://Tnelab.TneForm.Test/ui/default.html?cmd=测试").Ready();
         //await newForm.Show();
-        ofn = new TMiniblink.OpenFileDialog();
-        ofn.Ready().then(async function () {
-            await(ofn.Title = "请选择测试文件");
-            await(ofn.Filter = "所有文件(*.*)|文本文件(*.txt)");
+        文件选择对话框 = new TMiniblink.OpenFileDialog();
+        文件选择对话框.Ready().then(async function () {
+            await (文件选择对话框.Title = "请选择测试文件");
+            await (文件选择对话框.Filter = "所有文件(*.*)|文本文件(*.txt)");
             let handle = await ThisForm.Handle;
-            await(ofn.OwnerHandle = handle);
-            await(ofn.AllowMultiSelect = true);
-            ofn.ShowDialog().then(function (files) {
+            await (文件选择对话框.OwnerHandle = handle);
+            await (文件选择对话框.AllowMultiSelect = true);
+            文件选择对话框.ShowDialog().then(function (files) {
                 alert(files.join(";"));
             });        
         });
