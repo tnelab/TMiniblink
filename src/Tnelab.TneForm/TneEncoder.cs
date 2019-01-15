@@ -17,7 +17,8 @@ namespace Tnelab.HtmlView
                 || c == '-' || c == '_' || c == '\\'
                 || c == '/' || c == '.') ? c.ToString() : Uri.HexEscape(c));
             }
-            return sb.ToString();
+            var result= HttpUtility.UrlEncode(sb.ToString());
+            return result;
         }
         public static string UnEscape(string str)
         {

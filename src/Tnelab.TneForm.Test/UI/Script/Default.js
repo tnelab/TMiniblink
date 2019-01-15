@@ -11,13 +11,25 @@ let newForm;
 let eventTest = function (sender, args) {
     alert(args.Files.join(",") + ":X:" + args.X + ":Y:" + args.Y);
 };
+let ofn;
 function InvokeTest() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             //newForm = await new TMiniblink.TneForm("Tne://Tnelab.TneForm.Test/ui/default.html?cmd=测试").Ready();
             //await newForm.Show();
-            yield showNotifyIcon();
-            alert("HI");
+            ofn = new TMiniblink.OpenFileDialog();
+            ofn.Ready().then(function () {
+                return __awaiter(this, void 0, void 0, function* () {
+                    yield (ofn.Title = "请选择测试文件");
+                    yield (ofn.Filter = "所有文件(*.*)|文本文件(*.txt)");
+                    let handle = yield ThisForm.Handle;
+                    yield (ofn.OwnerHandle = handle);
+                    yield (ofn.AllowMultiSelect = true);
+                    ofn.ShowDialog().then(function (files) {
+                        alert(files.join(";"));
+                    });
+                });
+            });
         }
         catch (error) {
             console.log(error);

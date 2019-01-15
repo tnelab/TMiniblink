@@ -59,6 +59,22 @@ declare namespace TMiniblink {
     }
 }
 declare namespace TMiniblink {
+    class OpenFileDialog extends Tnelab.NativeObject {
+        OwnerHandle: any;
+        Filter: string;
+        Title: string;
+        AllowMultiSelect: boolean;
+        ShowDialog(): any;
+        Equals(_obj: any): boolean;
+        static Equals_(_objA: any, _objB: any): boolean;
+        GetHashCode(): number;
+        GetType(): any;
+        static ReferenceEquals(_objA: any, _objB: any): boolean;
+        ToString(): string;
+        constructor();
+    }
+}
+declare namespace TMiniblink {
     enum StartPosition {
         Manual = 1,
         CenterScreen = 2,

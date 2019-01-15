@@ -53,6 +53,7 @@ namespace Tnelab {
     TM.OnCallJs = OnCallJs;
     //js通讯回调
     function OnResponse(msgId: number, response: string) {
+        response = decodeURI(response);
         response = unescape(response);
         return response;
     }

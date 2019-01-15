@@ -73,6 +73,7 @@ var Tnelab;
     TM.OnCallJs = OnCallJs;
     //js通讯回调
     function OnResponse(msgId, response) {
+        response = decodeURI(response);
         response = unescape(response);
         return response;
     }
@@ -820,6 +821,67 @@ var TMiniblink;
     ], NotifyIcon);
     TMiniblink.NotifyIcon = NotifyIcon;
     Tnelab.RegisterNativeMapAsync("Tnelab.HtmlView.NotifyIcon", "TMiniblink.NotifyIcon");
+})(TMiniblink || (TMiniblink = {}));
+//此代码由机器生成，请不要手动修改
+///<reference path="./tnemap.ts"/>
+var TMiniblink;
+(function (TMiniblink) {
+    let OpenFileDialog = class OpenFileDialog extends Tnelab.NativeObject {
+        constructor() { super(arguments); }
+        set OwnerHandle(value) { }
+        get OwnerHandle() { return undefined; }
+        set Filter(value) { }
+        get Filter() { return undefined; }
+        set Title(value) { }
+        get Title() { return undefined; }
+        set AllowMultiSelect(value) { }
+        get AllowMultiSelect() { return undefined; }
+        ShowDialog() { return undefined; }
+        Equals(_obj) { return undefined; }
+        static Equals_(_objA, _objB) { return undefined; }
+        GetHashCode() { return undefined; }
+        GetType() { return undefined; }
+        static ReferenceEquals(_objA, _objB) { return undefined; }
+        ToString() { return undefined; }
+    };
+    __decorate([
+        Tnelab.InvokeInfo(undefined, "System.IntPtr")
+    ], OpenFileDialog.prototype, "OwnerHandle", null);
+    __decorate([
+        Tnelab.InvokeInfo(undefined, "System.String")
+    ], OpenFileDialog.prototype, "Filter", null);
+    __decorate([
+        Tnelab.InvokeInfo(undefined, "System.String")
+    ], OpenFileDialog.prototype, "Title", null);
+    __decorate([
+        Tnelab.InvokeInfo(undefined, "System.Boolean")
+    ], OpenFileDialog.prototype, "AllowMultiSelect", null);
+    __decorate([
+        Tnelab.InvokeInfo("ShowDialog")
+    ], OpenFileDialog.prototype, "ShowDialog", null);
+    __decorate([
+        Tnelab.InvokeInfo("Equals", "System.Object")
+    ], OpenFileDialog.prototype, "Equals", null);
+    __decorate([
+        Tnelab.InvokeInfo("GetHashCode")
+    ], OpenFileDialog.prototype, "GetHashCode", null);
+    __decorate([
+        Tnelab.InvokeInfo("GetType")
+    ], OpenFileDialog.prototype, "GetType", null);
+    __decorate([
+        Tnelab.InvokeInfo("ToString")
+    ], OpenFileDialog.prototype, "ToString", null);
+    __decorate([
+        Tnelab.InvokeInfo("Equals_", "System.Object", "System.Object")
+    ], OpenFileDialog, "Equals_", null);
+    __decorate([
+        Tnelab.InvokeInfo("ReferenceEquals", "System.Object", "System.Object")
+    ], OpenFileDialog, "ReferenceEquals", null);
+    OpenFileDialog = __decorate([
+        Tnelab.ToMap("TMiniblink.OpenFileDialog", "Tnelab.HtmlView.OpenFileDialog")
+    ], OpenFileDialog);
+    TMiniblink.OpenFileDialog = OpenFileDialog;
+    Tnelab.RegisterNativeMapAsync("Tnelab.HtmlView.OpenFileDialog", "TMiniblink.OpenFileDialog");
 })(TMiniblink || (TMiniblink = {}));
 var TMiniblink;
 (function (TMiniblink) {

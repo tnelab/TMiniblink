@@ -33,12 +33,16 @@ namespace Tnelab.HtmlView
     using HDROP = IntPtr;
     using LPWSTR = IntPtr;
     using PVOID = IntPtr;
+    using WORD = Int16;
+    using LPTSTR = String;
 
     [SuppressUnmanagedCodeSecurity]
     static partial class NativeMethods
     {
         [UnmanagedFunctionPointer(CallingConvention.Winapi,SetLastError =true)]
         public delegate int WinProcDelegate(IntPtr hWnd, uint message, uint wParam, uint lParam);
+        [UnmanagedFunctionPointer(CallingConvention.Winapi, SetLastError = true)]
+        public delegate IntPtr LPOFNHOOKPROC(HWND Arg1,UINT Arg2,WPARAM Arg3,LPARAM Arg4);
         public enum HitTest : int                   //测试句柄
         {
             #region 测试句柄
@@ -74,6 +78,33 @@ namespace Tnelab.HtmlView
             HTHELP = 21
 
             #endregion
+        }
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        public struct OPENFILENAMEW
+        {
+            public DWORD lStructSize;
+            public HWND hwndOwner;
+            public HINSTANCE hInstance;
+            public LPCTSTR lpstrFilter;
+            public LPTSTR lpstrCustomFilter;
+            public DWORD nMaxCustFilter;
+            public DWORD nFilterIndex;
+            public IntPtr lpstrFile;
+            public DWORD nMaxFile;
+            public LPTSTR lpstrFileTitle;
+            public DWORD nMaxFileTitle;
+            public LPCTSTR lpstrInitialDir;
+            public LPCTSTR lpstrTitle;
+            public DWORD Flags;
+            public WORD nFileOffset;
+            public WORD nFileExtension;
+            public LPCTSTR lpstrDefExt;
+            public LPARAM lCustData;
+            public LPOFNHOOKPROC lpfnHook;
+            public LPCTSTR lpTemplateName;
+            public IntPtr pvReserved;
+            public DWORD dwReserved;
+            public DWORD FlagsEx;
         }
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         public struct NOTIFYICONDATA
@@ -149,7 +180,7 @@ namespace Tnelab.HtmlView
             public LONG bottom;
         }
 
-        #region Nested type: MINMAXINFO
+#region Nested type: MINMAXINFO
         [StructLayout(LayoutKind.Sequential)]
         public struct MINMAXINFO
         {
@@ -159,9 +190,9 @@ namespace Tnelab.HtmlView
             public POINT ptMinTrackSize;
             public POINT ptMaxTrackSize;
         }
-        #endregion
+#endregion
 
-        #region Nested type: MONITORINFO
+#region Nested type: MONITORINFO
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
         public class MONITORINFO
         {
@@ -170,7 +201,7 @@ namespace Tnelab.HtmlView
             public RECT rcWork;
             public int dwFlags;
         }
-        #endregion
+#endregion
         [StructLayout(LayoutKind.Sequential)]
         public struct SIZE
         {
@@ -506,6 +537,10 @@ namespace Tnelab.HtmlView
         public static extern BOOL Shell_NotifyIcon(DWORD dwMessage,IntPtr lpdata);
         [DllImport("User32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
         public static extern HWND GetForegroundWindow();
+        [DllImport("Comdlg32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true, CharSet = CharSet.Unicode)]
+        [return:MarshalAs(UnmanagedType.U1)]
+        public static extern BOOL GetOpenFileNameW(ref OPENFILENAMEW Arg1);
+
         public static ushort LOWORD(uint value)
         {
             return (ushort)(value & 0xFFFF);
