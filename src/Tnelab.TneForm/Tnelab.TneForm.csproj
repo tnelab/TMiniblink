@@ -29,6 +29,7 @@
     <TypeScriptExperimentalDecorators>true</TypeScriptExperimentalDecorators>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="BrowseFolderDialog.cs.ts" />
     <None Remove="NotifyIcon.cs.ts" />
     <None Remove="OpenFIleDialog.cs.ts" />
     <None Remove="SaveFileDialog.cs.ts" />
@@ -43,6 +44,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <TypeScriptCompile Include="BrowseFolderDialog.cs.ts" />
     <TypeScriptCompile Include="NotifyIcon.cs.ts" />
     <TypeScriptCompile Include="OpenFIleDialog.cs.ts" />
     <TypeScriptCompile Include="SaveFileDialog.cs.ts" />

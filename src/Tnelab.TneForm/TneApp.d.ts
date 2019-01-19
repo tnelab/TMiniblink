@@ -144,3 +144,17 @@ declare namespace TMiniblink {
         constructor();
     }
 }
+declare namespace TMiniblink {
+    class BrowseFolderDialog extends Tnelab.NativeObject {
+        OwnerHandle: any;
+        Title: string;
+        ShowDialog(): string;
+        Equals(_obj: any): boolean;
+        static Equals_(_objA: any, _objB: any): boolean;
+        GetHashCode(): number;
+        GetType(): any;
+        static ReferenceEquals(_objA: any, _objB: any): boolean;
+        ToString(): string;
+        constructor();
+    }
+}

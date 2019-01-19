@@ -35,10 +35,26 @@ namespace Tnelab.HtmlView
     using PVOID = IntPtr;
     using WORD = Int16;
     using LPTSTR = String;
+    using HRESULT = UInt32;
+    using PCIDLIST_ABSOLUTE = IntPtr;
+    using BFFCALLBACK = IntPtr;
+    using PIDLIST_ABSOLUTE = IntPtr;
 
     [SuppressUnmanagedCodeSecurity]
     static partial class NativeMethods
     {
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        public struct BROWSEINFO
+        {
+            public HWND hwndOwner;
+            public PCIDLIST_ABSOLUTE pidlRoot;
+            public IntPtr pszDisplayName;
+            public LPCTSTR lpszTitle;
+            public UINT ulFlags;
+            public BFFCALLBACK lpfn;
+            public LPARAM lParam;
+            public int iImage;
+        }
         [UnmanagedFunctionPointer(CallingConvention.Winapi,SetLastError =true)]
         public delegate int WinProcDelegate(IntPtr hWnd, uint message, uint wParam, uint lParam);
         [UnmanagedFunctionPointer(CallingConvention.Winapi, SetLastError = true)]
@@ -543,6 +559,11 @@ namespace Tnelab.HtmlView
         [DllImport("Comdlg32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.U1)]
         public static extern BOOL GetSaveFileNameW(ref OPENFILENAMEW Arg1);
+        [DllImport("Shell32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        public static extern BOOL SHGetPathFromIDListW(PCIDLIST_ABSOLUTE pidl,LPWSTR pszPath);
+        [DllImport("Shell32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern PIDLIST_ABSOLUTE SHBrowseForFolderW(ref BROWSEINFO lpbi);
 
         public static ushort LOWORD(uint value)
         {

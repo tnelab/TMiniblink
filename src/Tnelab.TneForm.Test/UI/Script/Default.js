@@ -13,7 +13,19 @@ let eventTest = function (sender, args) {
 };
 let 文件选择对话框;
 let 文件保存对话框;
+let 目录选择对话框;
 function InvokeTest() {
+    return __awaiter(this, void 0, void 0, function* () {
+        目录选择对话框 = yield new TMiniblink.BrowseFolderDialog().Ready();
+        yield (目录选择对话框.Title = "请选择游戏目录");
+        let handle = yield ThisForm.Handle;
+        yield (目录选择对话框.OwnerHandle = handle);
+        let file = yield 目录选择对话框.ShowDialog();
+        alert(file);
+    });
+}
+let notifyicon;
+function SaveFile() {
     return __awaiter(this, void 0, void 0, function* () {
         文件保存对话框 = yield new TMiniblink.SaveFileDialog().Ready();
         yield (文件保存对话框.Title = "保存测试文件");
@@ -25,7 +37,6 @@ function InvokeTest() {
         alert(file);
     });
 }
-let notifyicon;
 function OpenFile() {
     return __awaiter(this, void 0, void 0, function* () {
         try {

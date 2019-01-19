@@ -753,7 +753,7 @@ var Tnelab;
     document.addEventListener("DOMContentLoaded", dom_ready_, true);
     /////////////////////////////////////////////////////////////////////////////////JSON
 })(Tnelab || (Tnelab = {}));
-//�˴����ɻ������ɣ��벻Ҫ�ֶ��޸�
+//此代码由机器生成，请不要手动修改
 ///<reference path="./TneMap.ts"/>
 var TMiniblink;
 (function (TMiniblink) {
@@ -1115,5 +1115,56 @@ var TMiniblink;
     ], SaveFileDialog);
     TMiniblink.SaveFileDialog = SaveFileDialog;
     Tnelab.RegisterNativeMapAsync("Tnelab.HtmlView.SaveFileDialog", "TMiniblink.SaveFileDialog");
+})(TMiniblink || (TMiniblink = {}));
+//此代码由机器生成，请不要手动修改
+///<reference path="./tnemap.ts"/>
+var TMiniblink;
+(function (TMiniblink) {
+    let BrowseFolderDialog = class BrowseFolderDialog extends Tnelab.NativeObject {
+        constructor() { super(arguments); }
+        set OwnerHandle(value) { }
+        get OwnerHandle() { return undefined; }
+        set Title(value) { }
+        get Title() { return undefined; }
+        ShowDialog() { return undefined; }
+        Equals(_obj) { return undefined; }
+        static Equals_(_objA, _objB) { return undefined; }
+        GetHashCode() { return undefined; }
+        GetType() { return undefined; }
+        static ReferenceEquals(_objA, _objB) { return undefined; }
+        ToString() { return undefined; }
+    };
+    __decorate([
+        Tnelab.InvokeInfo(undefined, "System.IntPtr")
+    ], BrowseFolderDialog.prototype, "OwnerHandle", null);
+    __decorate([
+        Tnelab.InvokeInfo(undefined, "System.String")
+    ], BrowseFolderDialog.prototype, "Title", null);
+    __decorate([
+        Tnelab.InvokeInfo("ShowDialog")
+    ], BrowseFolderDialog.prototype, "ShowDialog", null);
+    __decorate([
+        Tnelab.InvokeInfo("Equals", "System.Object")
+    ], BrowseFolderDialog.prototype, "Equals", null);
+    __decorate([
+        Tnelab.InvokeInfo("GetHashCode")
+    ], BrowseFolderDialog.prototype, "GetHashCode", null);
+    __decorate([
+        Tnelab.InvokeInfo("GetType")
+    ], BrowseFolderDialog.prototype, "GetType", null);
+    __decorate([
+        Tnelab.InvokeInfo("ToString")
+    ], BrowseFolderDialog.prototype, "ToString", null);
+    __decorate([
+        Tnelab.InvokeInfo("Equals_", "System.Object", "System.Object")
+    ], BrowseFolderDialog, "Equals_", null);
+    __decorate([
+        Tnelab.InvokeInfo("ReferenceEquals", "System.Object", "System.Object")
+    ], BrowseFolderDialog, "ReferenceEquals", null);
+    BrowseFolderDialog = __decorate([
+        Tnelab.ToMap("TMiniblink.BrowseFolderDialog", "Tnelab.HtmlView.BrowseFolderDialog")
+    ], BrowseFolderDialog);
+    TMiniblink.BrowseFolderDialog = BrowseFolderDialog;
+    Tnelab.RegisterNativeMapAsync("Tnelab.HtmlView.BrowseFolderDialog", "TMiniblink.BrowseFolderDialog");
 })(TMiniblink || (TMiniblink = {}));
 //# sourceMappingURL=TneApp.js.map
