@@ -4,7 +4,19 @@ let eventTest = function (sender, args) {
     alert(args.Files.join(",") + ":X:" + args.X + ":Y:" + args.Y);
 }
 let 文件选择对话框: TMiniblink.OpenFileDialog;
+let 文件保存对话框: TMiniblink.SaveFileDialog;
 async function InvokeTest() {
+    文件保存对话框 = await new TMiniblink.SaveFileDialog().Ready();
+    await (文件保存对话框.Title = "保存测试文件");
+    await (文件保存对话框.Filter = "所有文件(*.*)|文本文件(*.txt)");
+    let handle = await ThisForm.Handle;
+    await (文件保存对话框.OwnerHandle = handle);
+    await (文件保存对话框.File = "t.txt");
+    let file = await 文件保存对话框.ShowDialog();
+    alert(file);    
+}
+let notifyicon: TMiniblink.NotifyIcon;
+async function OpenFile() {
     try {
         //newForm = await new TMiniblink.TneForm("Tne://Tnelab.TneForm.Test/ui/default.html?cmd=测试").Ready();
         //await newForm.Show();
@@ -17,14 +29,13 @@ async function InvokeTest() {
             await (文件选择对话框.AllowMultiSelect = true);
             文件选择对话框.ShowDialog().then(function (files) {
                 alert(files.join(";"));
-            });        
+            });
         });
     }
     catch (error) {
         console.log(error);
     }
 }
-let notifyicon: TMiniblink.NotifyIcon;
 async function showNotifyIcon(){
     let hwnd = await ThisForm.Handle;
     notifyicon = await new TMiniblink.NotifyIcon(hwnd, "default.png").Ready();

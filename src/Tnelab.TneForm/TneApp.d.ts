@@ -128,3 +128,19 @@ declare namespace TMiniblink {
         constructor(_url: string);
     }
 }
+declare namespace TMiniblink {
+    class SaveFileDialog extends Tnelab.NativeObject {
+        OwnerHandle: any;
+        Filter: string;
+        Title: string;
+        File: string;
+        ShowDialog(): string;
+        Equals(_obj: any): boolean;
+        static Equals_(_objA: any, _objB: any): boolean;
+        GetHashCode(): number;
+        GetType(): any;
+        static ReferenceEquals(_objA: any, _objB: any): boolean;
+        ToString(): string;
+        constructor();
+    }
+}

@@ -12,7 +12,21 @@ let eventTest = function (sender, args) {
     alert(args.Files.join(",") + ":X:" + args.X + ":Y:" + args.Y);
 };
 let 文件选择对话框;
+let 文件保存对话框;
 function InvokeTest() {
+    return __awaiter(this, void 0, void 0, function* () {
+        文件保存对话框 = yield new TMiniblink.SaveFileDialog().Ready();
+        yield (文件保存对话框.Title = "保存测试文件");
+        yield (文件保存对话框.Filter = "所有文件(*.*)|文本文件(*.txt)");
+        let handle = yield ThisForm.Handle;
+        yield (文件保存对话框.OwnerHandle = handle);
+        yield (文件保存对话框.File = "t.txt");
+        let file = yield 文件保存对话框.ShowDialog();
+        alert(file);
+    });
+}
+let notifyicon;
+function OpenFile() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             //newForm = await new TMiniblink.TneForm("Tne://Tnelab.TneForm.Test/ui/default.html?cmd=测试").Ready();
@@ -36,7 +50,6 @@ function InvokeTest() {
         }
     });
 }
-let notifyicon;
 function showNotifyIcon() {
     return __awaiter(this, void 0, void 0, function* () {
         let hwnd = yield ThisForm.Handle;

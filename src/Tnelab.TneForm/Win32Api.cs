@@ -540,6 +540,9 @@ namespace Tnelab.HtmlView
         [DllImport("Comdlg32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true, CharSet = CharSet.Unicode)]
         [return:MarshalAs(UnmanagedType.U1)]
         public static extern BOOL GetOpenFileNameW(ref OPENFILENAMEW Arg1);
+        [DllImport("Comdlg32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        public static extern BOOL GetSaveFileNameW(ref OPENFILENAMEW Arg1);
 
         public static ushort LOWORD(uint value)
         {
