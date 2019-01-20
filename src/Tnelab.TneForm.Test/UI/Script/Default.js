@@ -16,6 +16,16 @@ let 文件保存对话框;
 let 目录选择对话框;
 function InvokeTest() {
     return __awaiter(this, void 0, void 0, function* () {
+        yield (ThisForm.AllowDrop = true);
+        let event = yield ThisForm.DragFilesEvent;
+        yield event.AddListener((sender, args) => {
+            alert(args.Files[0]);
+        });
+    });
+}
+let notifyicon;
+function SelectDir() {
+    return __awaiter(this, void 0, void 0, function* () {
         目录选择对话框 = yield new TMiniblink.BrowseFolderDialog().Ready();
         yield (目录选择对话框.Title = "请选择游戏目录");
         let handle = yield ThisForm.Handle;
@@ -24,7 +34,6 @@ function InvokeTest() {
         alert(file);
     });
 }
-let notifyicon;
 function SaveFile() {
     return __awaiter(this, void 0, void 0, function* () {
         文件保存对话框 = yield new TMiniblink.SaveFileDialog().Ready();

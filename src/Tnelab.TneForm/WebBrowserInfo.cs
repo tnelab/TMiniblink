@@ -10,6 +10,7 @@ namespace Tnelab.HtmlView
 {
     class WebBrowserInfo
     {
+        public TneHashDic TneHashDic { get; private set; } = new TneHashDic();
         public WebBrowserInfo(IWebBrowser browser, Func<object> getParentControl)
         {
             ParentControlId = this.CreateId();
@@ -129,10 +130,6 @@ namespace Tnelab.HtmlView
             {
                 this.DestroyNativeObject(id,false);
             }
-        }
-        ~WebBrowserInfo()
-        {
-            ClearNativeObject();
         }
     }
 }

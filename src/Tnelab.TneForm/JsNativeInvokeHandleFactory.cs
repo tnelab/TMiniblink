@@ -45,39 +45,9 @@ namespace Tnelab.HtmlView
             HandleCreaterMap.Add(action, creater);
 
         }
-        public void AddToHashDic(string keyToHash,object obj)
-        {
-            hashDic_.Add(GetHash(Encoding.UTF8.GetBytes(keyToHash)), obj);
-        }
-        public void RemoveFromHashDic(string keyToHash)
-        {
-            var hash = GetHash(Encoding.UTF8.GetBytes(keyToHash));
-            if (hashDic_.ContainsKey(hash))
-            {
-                hashDic_.Remove(hash);
-            }
-        }
-        public object GetFromHashDic(string keyToHash)
-        {
-            var hash = GetHash(Encoding.UTF8.GetBytes(keyToHash));
-            if (hashDic_.ContainsKey(hash))
-            {
-                return hashDic_[hash];
-            }
-            return null;
-        }
-        private readonly Dictionary<int, object> hashDic_ = new Dictionary<int, object>();
+
         private readonly Dictionary<MapAction, Func<JsNativeInvokeContext, IJsNavateInvokeHandle>> HandleCreaterMap = new Dictionary<MapAction, Func<JsNativeInvokeContext, IJsNavateInvokeHandle>>();
         private JsNativeInvokeHandleFactory() {
-        }
-        private int GetHash(byte[] datas)
-        {
-            int h = 0;
-            foreach (var item in datas)
-            {
-                h = 31 * h + item;
-            }
-            return h;
         }
     }
     class JsNativeInvokeContext
@@ -739,7 +709,7 @@ namespace Tnelab.HtmlView
             var inAction=delegeateInfo.GetType().GetMethod("Invoke");
             Delegate handler = Delegate.CreateDelegate(eventInfo.EventHandlerType,args[0], inAction);
             eventInfo.AddEventHandler(obj,handler);
-            JsNativeInvokeHandleFactory.This.AddToHashDic(mapInfo.Args[0].Value.ToString()+mapInfo.Id.ToString(), handler);
+            this.Context.WebBrowserInfo.TneHashDic.AddToHashDic(mapInfo.Args[0].Value.ToString(), handler);
             return null;
         }
     }
@@ -753,9 +723,9 @@ namespace Tnelab.HtmlView
             if (obj == null)
                 throw new Exception($"本机对象{mapInfo.Id}不存在");
             var eventInfo = obj.GetType().GetEvent(mapInfo.Name);
-            var handler = JsNativeInvokeHandleFactory.This.GetFromHashDic(mapInfo.Args[0].Value.ToString()) as Delegate;
+            var handler = this.Context.WebBrowserInfo.TneHashDic.GetFromHashDic(mapInfo.Args[0].Value.ToString()) as Delegate;
             eventInfo.RemoveEventHandler(obj, handler);
-            JsNativeInvokeHandleFactory.This.RemoveFromHashDic(mapInfo.Args[0].Value.ToString());
+            this.Context.WebBrowserInfo.TneHashDic.RemoveFromHashDic(mapInfo.Args[0].Value.ToString());
             return null;
         }
     }

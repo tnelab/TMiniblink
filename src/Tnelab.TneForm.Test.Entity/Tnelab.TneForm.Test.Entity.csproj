@@ -11,12 +11,4 @@
     </Compile>
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="UserInfo.txt">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>UserInfo.cs</DependentUpon>
-    </None>
-  </ItemGroup>
-
 </Project>
