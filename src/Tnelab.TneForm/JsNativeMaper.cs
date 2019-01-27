@@ -163,7 +163,7 @@ namespace Tnelab.HtmlView
                             var wb = webBrowser as IWebBrowser;
                             var wbinfo = GetBrowserInfo(wb);
                             var tneForm=wbinfo.GetNativeObject(runInfo.TneFormId,false) as TneForm;
-                            var result=tneForm.WebBrowser.RunJs($"return ({runInfo.Function})({runInfo.Arg})");
+                            var result=tneForm.WebBrowser.RunJs($"return (async {runInfo.Function})(\"{runInfo.Arg}\").then(function(result){{alert(result);}})");
                             wb.ResponseJsQuery(args.WebView, args.QueryId, args.CustomMsg, result);
                         }
                         break;

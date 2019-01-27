@@ -10,8 +10,8 @@
     <style>
         .button {
             color: white;
-            padding-right:10px;
-            padding-left:10px;
+            padding-right: 10px;
+            padding-left: 10px;
         }
     </style>
 
@@ -19,7 +19,7 @@
     <script src="Tne://Tnelab.TneForm.Test.BLL/Service.js"></script>    
     <script src="Tne://Tnelab.TneForm.Test/ui/script/window.js"></script>
     
-    <script src="Script/Default.js"></script>
+    <script src="../../Script/Default.js"></script>
     
     
 </head>
@@ -35,15 +35,10 @@
         </div>
         <div class="window_client" oncontextmenu="OnContextMenu(this,event)">
 <h4>窗口测试</h4>
-<hr/>
-<p><a class="button" href="javascript:CreateSubFormTest1()">创建子窗口-居中于父窗口</a></p>
-<p><a class="button" href="javascript:CreateSubFormTest2()">创建子窗口-居中于屏幕</a></p>
-<p><a class="button" href="javascript:CreateSubFormTest3()">创建子窗口-使用XY</a></p>
-<p><a class="button" href="javascript:CreateSubFormTest4()">创建子窗口-做为对话框</a></p>
-<p><a class="button" href="javascript:CreateSubFormTest5()">创建子窗口-使用file协议</a></p>
-<p><a class="button" href="javascript:RunInSubFormTest1()">跨窗口通讯-最小化子窗口</a></p>
-<p><a class="button" href="javascript:RunInSubFormTest2()">跨窗口通讯-在子窗口执行脚本</a></p>
-</div>
+<hr />
+<p>
+    <a class="button" href="javascript:CreateSubFormTest()">创建子窗口</a>
+</p></div>
     </div>
 </body>
 </html>

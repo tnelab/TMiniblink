@@ -6,6 +6,7 @@ html {
     background: #ffffff;
     background: rgba(255, 255, 255,0);
     border-radius: 10px;
+    color:white;
 }
 body {
     position:absolute;

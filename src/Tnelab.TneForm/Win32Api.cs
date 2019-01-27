@@ -364,6 +364,7 @@ namespace Tnelab.HtmlView
         public const int WM_MBUTTONUP = 0x0208;
         public const int WM_DROPFILES =                   0x0233;
         public const int WM_CONTEXTMENU=                  0x007B;
+        public const int WM_WM_WINDOWPOSCHANGED = 0x0047;
 
         public const int CW_USEDEFAULT = unchecked((int)0x80000000);
 

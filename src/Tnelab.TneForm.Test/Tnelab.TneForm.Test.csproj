@@ -26,6 +26,8 @@
     <None Remove="UI\Script\window.js" />
     <None Remove="UI\Script\window.ts" />
     <None Remove="UI\TestContextMenu.html" />
+    <None Remove="UI\Test\FormTest\SubDialog.html" />
+    <None Remove="UI\Test\FormTest\SubForm.html" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,7 +40,9 @@
       <Generator></Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\Script\window.js" />
-    <EmbeddedResource Include="UI\TestContextMenu.html" />
+    <EmbeddedResource Include="UI\Test\ContextMenuTest\TestContextMenu.html" />
+    <EmbeddedResource Include="UI\Test\FormTest\SubDialog.html" />
+    <EmbeddedResource Include="UI\Test\FormTest\SubForm.html" />
     <TypeScriptCompile Include="UI\Script\window.ts" />
   </ItemGroup>
 
@@ -87,6 +91,11 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="UI\Test\FormTest\SubFormForFile.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets') AND '$(EnableTypeScriptNuGetTarget)' != 'true'" />
 

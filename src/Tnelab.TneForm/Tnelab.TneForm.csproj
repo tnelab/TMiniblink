@@ -30,6 +30,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="BrowseFolderDialog.cs.ts" />
+    <None Remove="default.ico" />
     <None Remove="NotifyIcon.cs.ts" />
     <None Remove="OpenFIleDialog.cs.ts" />
     <None Remove="SaveFileDialog.cs.ts" />

@@ -41,6 +41,20 @@ declare namespace Tnelab {
     }
 }
 declare namespace TMiniblink {
+    class BrowseFolderDialog extends Tnelab.NativeObject {
+        OwnerHandle: any;
+        Title: string;
+        ShowDialog(): string;
+        Equals(_obj: any): boolean;
+        static Equals_(_objA: any, _objB: any): boolean;
+        GetHashCode(): number;
+        GetType(): any;
+        static ReferenceEquals(_objA: any, _objB: any): boolean;
+        ToString(): string;
+        constructor();
+    }
+}
+declare namespace TMiniblink {
     class NotifyIcon extends Tnelab.NativeObject {
         readonly Click: Tnelab.TneEvent;
         readonly ContextMenu: Tnelab.TneEvent;
@@ -65,6 +79,22 @@ declare namespace TMiniblink {
         Title: string;
         AllowMultiSelect: boolean;
         ShowDialog(): any;
+        Equals(_obj: any): boolean;
+        static Equals_(_objA: any, _objB: any): boolean;
+        GetHashCode(): number;
+        GetType(): any;
+        static ReferenceEquals(_objA: any, _objB: any): boolean;
+        ToString(): string;
+        constructor();
+    }
+}
+declare namespace TMiniblink {
+    class SaveFileDialog extends Tnelab.NativeObject {
+        OwnerHandle: any;
+        Filter: string;
+        Title: string;
+        File: string;
+        ShowDialog(): string;
         Equals(_obj: any): boolean;
         static Equals_(_objA: any, _objB: any): boolean;
         GetHashCode(): number;
@@ -126,35 +156,5 @@ declare namespace TMiniblink {
         static ReferenceEquals(_objA: any, _objB: any): boolean;
         ToString(): string;
         constructor(_url: string);
-    }
-}
-declare namespace TMiniblink {
-    class SaveFileDialog extends Tnelab.NativeObject {
-        OwnerHandle: any;
-        Filter: string;
-        Title: string;
-        File: string;
-        ShowDialog(): string;
-        Equals(_obj: any): boolean;
-        static Equals_(_objA: any, _objB: any): boolean;
-        GetHashCode(): number;
-        GetType(): any;
-        static ReferenceEquals(_objA: any, _objB: any): boolean;
-        ToString(): string;
-        constructor();
-    }
-}
-declare namespace TMiniblink {
-    class BrowseFolderDialog extends Tnelab.NativeObject {
-        OwnerHandle: any;
-        Title: string;
-        ShowDialog(): string;
-        Equals(_obj: any): boolean;
-        static Equals_(_objA: any, _objB: any): boolean;
-        GetHashCode(): number;
-        GetType(): any;
-        static ReferenceEquals(_objA: any, _objB: any): boolean;
-        ToString(): string;
-        constructor();
     }
 }
