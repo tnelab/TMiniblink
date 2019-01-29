@@ -18,6 +18,7 @@
 * 退出vs2017，安装编译出来的TMiniblinkToolkit.vsix
 * 重新打开项目
 * 切换为debug模式，可进行调试
+* 设置启动项目为：Tnelab.TneForm.Test
 ## 项目结构
 * Tools\Tnelab.TneAppExeTemplate-项目模板
 * Tools\Tnelab.TneAppLibForNetStandardTemplate-项目模板
