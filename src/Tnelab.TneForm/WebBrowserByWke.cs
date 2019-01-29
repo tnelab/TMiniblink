@@ -19,11 +19,12 @@ namespace Tnelab.HtmlView
             {
                 JsQueryEventArgs args = new JsQueryEventArgs();
                 args.CustomMsg = jsToInt(es,jsArg(es, 0));
-                args.ES = es;
                 args.Request = jsToString(es, jsArg(es, 1));
                 args.QueryId = idSeed_;
-                idSeed_++;
-                //var func = jsArg(es, 2);
+                args.WebView = jsGetWebView(es);                
+                args.Func=jsArg(es, 2);
+                args.ES = wkeGlobalExec(args.WebView);
+                idSeed_++;                
                 jsQuery(jsGetWebView(es), args);
             }
             return jsUndefined();
@@ -214,7 +215,7 @@ namespace Tnelab.HtmlView
             var args = queryMap_[queryId];
             queryMap_.Remove(queryId);
             var tnelab = jsGetGlobal(args.ES, "Tnelab");
-            var func = jsArg(args.ES, 2);
+            var func = args.Func;
             jsCall(args.ES, func, tnelab, new[] { jsInt(customMsg), jsStringW(args.ES, response) }, 2);
         }
         public string RunJs(string script)

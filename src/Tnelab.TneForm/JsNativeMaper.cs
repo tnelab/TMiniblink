@@ -10,7 +10,7 @@ using static Tnelab.MiniBlinkV.NativeMethods;
 using System.Runtime.InteropServices;
 namespace Tnelab.HtmlView
 {
-    enum TneQueryId { NativeMap = 1, RegisterNativeMap = 2, DeleteNativeObject = 3 ,GetThisFormHashCode=4, RunFunctionForTneForm = 5, ShowContextMenuForTneForm =6}
+    enum TneQueryId { NativeMap = 1, RegisterNativeMap = 2, DeleteNativeObject = 3 ,GetThisFormHashCode=4, RunFunctionForTneForm = 5, ShowContextMenuForTneForm =6,RunFunctionResultForTneForm=7 }
     interface IJsNativeMaper
     {
         long AddBrowser(IWebBrowser browser, Func<object> GetParentControl);
@@ -133,6 +133,7 @@ namespace Tnelab.HtmlView
         }
         //JsNativeMaper() { }
         object webBrowserDicLock_ = new object();
+        TaskCompletionSource<string> taskRunFunctionResult_ = null;
         public long AddBrowser(IWebBrowser browser, Func<object> getParentControl)
         {
             if (browser == null)
@@ -163,8 +164,24 @@ namespace Tnelab.HtmlView
                             var wb = webBrowser as IWebBrowser;
                             var wbinfo = GetBrowserInfo(wb);
                             var tneForm=wbinfo.GetNativeObject(runInfo.TneFormId,false) as TneForm;
-                            var result=tneForm.WebBrowser.RunJs($"return (async {runInfo.Function})(\"{runInfo.Arg}\").then(function(result){{alert(result);}})");
-                            wb.ResponseJsQuery(args.WebView, args.QueryId, args.CustomMsg, result);
+                            var result=tneForm.WebBrowser.RunJs($"return (async {runInfo.Function})(\"{runInfo.Arg}\").then(async function(result){{await Tnelab.TneQueryAsync(Tnelab.TneQueryId.RunFunctionResultForTneForm, result);}})");
+                            if (taskRunFunctionResult_ != null)
+                                throw new Exception("runfunction异常");
+                            taskRunFunctionResult_ = new TaskCompletionSource<string>();
+                            Task.Factory.StartNew(() => {
+                                taskRunFunctionResult_.Task.Wait();
+                                wb.UIInvoke(() => { 
+                                    wb.ResponseJsQuery(args.WebView, args.QueryId, args.CustomMsg, taskRunFunctionResult_.Task.Result);
+                                });
+                                taskRunFunctionResult_ = null;
+                            });                            
+                        }
+                        break;
+                    case TneQueryId.RunFunctionResultForTneForm:
+                        {
+                            var wb = webBrowser as IWebBrowser;
+                            wb.ResponseJsQuery(args.WebView, args.QueryId, args.CustomMsg, "OK");
+                            taskRunFunctionResult_.SetResult(args.Request);
                         }
                         break;
                     case TneQueryId.ShowContextMenuForTneForm:

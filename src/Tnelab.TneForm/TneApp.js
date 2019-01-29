@@ -34,8 +34,10 @@ var Tnelab;
         TneQueryId[TneQueryId["GetThisFormHashCode"] = 4] = "GetThisFormHashCode"; /*获取当前窗口ID*/
         TneQueryId[TneQueryId["RunFunctionForTneForm"] = 5] = "RunFunctionForTneForm"; /*在指定TneForm中执行function*/
         TneQueryId[TneQueryId["ShowContextMenuForTneForm"] = 6] = "ShowContextMenuForTneForm";
+        TneQueryId[TneQueryId["RunFunctionResultForTneForm"] = 7] = "RunFunctionResultForTneForm";
     })(TneQueryId || (TneQueryId = {}));
     ;
+    TM.TneQueryId = TneQueryId;
     let GcMap = new Map();
     //垃圾回收支持结构
     function OnSetGC(id, gc) {
@@ -90,6 +92,7 @@ var Tnelab;
             });
         });
     }
+    TM.TneQueryAsync = TneQueryAsync;
     //本机调用通道
     function NativeMapAsync(json) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1027,7 +1030,7 @@ var Tnelab;
     }
     Tnelab.TneFormBase = TneFormBase;
 })(Tnelab || (Tnelab = {}));
-//此代码由机器生成，请不要手动修改
+//�˴����ɻ������ɣ��벻Ҫ�ֶ��޸�
 ///<reference path="./TneMap.ts"/>
 ///<reference path="./TneFormBase.ts"/>
 var TMiniblink;

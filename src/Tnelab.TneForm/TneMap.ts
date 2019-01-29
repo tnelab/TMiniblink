@@ -11,7 +11,8 @@ namespace Tnelab {
     ////////////////////////////////////////////////////////////////////////////*/
     /////////////////////////////////////////////////////////////////////////全局
     //js通讯通道分类
-    enum TneQueryId { NativeMap = 1/*本机对象调用映射*/, RegisterNativeMap/*注册类型映射*/ = 2, DeleteNativeObject = 3/*删除本机对象*/, GetThisFormHashCode = 4 /*获取当前窗口ID*/, RunFunctionForTneForm=5/*在指定TneForm中执行function*/,ShowContextMenuForTneForm=6};
+    enum TneQueryId { NativeMap = 1/*本机对象调用映射*/, RegisterNativeMap/*注册类型映射*/ = 2, DeleteNativeObject = 3/*删除本机对象*/, GetThisFormHashCode = 4 /*获取当前窗口ID*/, RunFunctionForTneForm = 5/*在指定TneForm中执行function*/, ShowContextMenuForTneForm = 6, RunFunctionResultForTneForm = 7 };
+    TM.TneQueryId = TneQueryId;
     //原始js通讯声明
     declare function mbQuery(msgId: number, request: string, onResponse: (id: number, response: string) => any): void;
     let GcMap = new Map<number, object>();
@@ -68,6 +69,7 @@ namespace Tnelab {
             });
         });
     }
+    TM.TneQueryAsync = TneQueryAsync;
     //本机调用通道
     async function NativeMapAsync(json: string): Promise<any> {
         return await TneQueryAsync(TneQueryId.NativeMap, json);

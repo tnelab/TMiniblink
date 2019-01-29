@@ -9,7 +9,7 @@ namespace Tnelab.HtmlView.Test
     {
         static void Main(string[] args)
         {
-            TneApplication.SetToVip();
+            //TneApplication.SetToVip();
             var f1 = new TneForm("Tne://Tnelab.TneForm.Test/ui/default.html?cmd=测试");
             //var f1 = new TneForm("http://m.cdsgnk.cn/"); 
             f1.Icon = "default.png";

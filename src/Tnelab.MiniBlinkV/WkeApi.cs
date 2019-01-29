@@ -1284,7 +1284,7 @@ namespace Tnelab.MiniBlink
         [return: MarshalAs(UnmanagedType.Bool)]
         public extern static bool jsIsObject(jsValue v);
         [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
-        [return: MarshalAs(UnmanagedType.Bool)]
+        [return: MarshalAs(UnmanagedType.I1)]
         public extern static bool jsIsFunction(jsValue v);
         [DllImport(MiniBlinkDll, CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
