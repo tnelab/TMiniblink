@@ -118,6 +118,7 @@ declare namespace TMiniblink {
 }
 declare namespace Tnelab {
     class TneFormBase extends NativeObject {
+        RunFunc(func: () => Promise<any>): any;
         RunFunc(func: () => Promise<string>): any;
         RunFunc(func: (json: string) => Promise<string>, json: string): any;
         ShowContextMenu(elm: Element, evt: MouseEvent, width: number, height: number, url: string): Promise<void>;

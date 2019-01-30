@@ -69,10 +69,9 @@ namespace Tnelab.HtmlView
     {
         public IntPtr WebView { get; set; }
         public IntPtr Param { get; set; }
-        public IntPtr ES { get; set; }
         public Int64 QueryId { get; set; }
         public int CustomMsg { get; set; }
         public string Request { get; set; }
-        public long Func { get; set; }
+        public string Func { get; set; }
     }
 }

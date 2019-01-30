@@ -322,7 +322,6 @@ namespace Tnelab.HtmlView
                 var args = new JsQueryEventArgs();
                 args.WebView = webView;
                 args.Param = param;
-                args.ES = es;
                 args.QueryId = queryId;
                 args.CustomMsg = customMsg;
                 args.Request = request;

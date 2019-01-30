@@ -22,8 +22,10 @@ namespace Tnelab.HtmlView
                 args.Request = jsToString(es, jsArg(es, 1));
                 args.QueryId = idSeed_;
                 args.WebView = jsGetWebView(es);                
-                args.Func=jsArg(es, 2);
-                args.ES = wkeGlobalExec(args.WebView);
+                var func= jsArg(es, 2);
+                var funcName = $"MbQueryCallback_{idSeed_}";
+                args.Func = funcName;
+                jsSetGlobal(es, funcName, func);
                 idSeed_++;                
                 jsQuery(jsGetWebView(es), args);
             }
@@ -214,9 +216,11 @@ namespace Tnelab.HtmlView
             response = TneEncoder.Escape(response);
             var args = queryMap_[queryId];
             queryMap_.Remove(queryId);
-            var tnelab = jsGetGlobal(args.ES, "Tnelab");
-            var func = args.Func;
-            jsCall(args.ES, func, tnelab, new[] { jsInt(customMsg), jsStringW(args.ES, response) }, 2);
+            var es = wkeGlobalExec(args.WebView);
+            var tnelab = jsGetGlobal(es, "Tnelab");
+            var func = jsGetGlobal(es, args.Func);
+            jsCall(es, func, tnelab, new[] { jsInt(customMsg), jsStringW(es, response) }, 2);
+            jsDeleteObjectProp(es, jsGetGlobal(es, "window"), args.Func);
         }
         public string RunJs(string script)
         {

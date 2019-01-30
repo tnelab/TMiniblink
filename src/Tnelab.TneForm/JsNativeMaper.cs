@@ -128,6 +128,7 @@ namespace Tnelab.HtmlView
             menuForm.Y = y;
             menuForm.Width = menuInfo.Width;
             menuForm.Height = menuInfo.Height;
+            menuForm.TopMost = true;
             menuForm.Show();
             webbrowser.ResponseJsQuery(webbrowser.WebView, args.QueryId, args.CustomMsg, "OK");
         }

@@ -19,6 +19,7 @@
     <None Remove="Default.js" />
     <None Remove="default.png" />
     <None Remove="Default.ts" />
+    <None Remove="tb.png" />
     <None Remove="UI\css\ContextMenu.css" />
     <None Remove="UI\css\window.css" />
     <None Remove="UI\Default.html" />
@@ -32,6 +33,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="default.png" />
+    <EmbeddedResource Include="tb.png" />
     <EmbeddedResource Include="UI\css\ContextMenu.css" />
     <EmbeddedResource Include="UI\css\window.css" />
     <EmbeddedResource Include="UI\img\bg.jpg" />
